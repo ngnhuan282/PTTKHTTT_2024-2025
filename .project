@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>JAVA_SGU_24-25</name>
+	<name>PTTK_SGU_24-25</name>
 	<comment></comment>
 	<projects>
-		<project>JAVA_SGU_24-25-main_QLBanGiay</project>
+		<project>PTTK_SGU_24-25-main_QLBanGiay</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
