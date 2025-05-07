@@ -1,5 +1,9 @@
 /module-info.class
-/DAO/
+/.classpath
+/.gitignore
+/.project
 /BUS/
-/GUI/
+/DAO/
 /DTO/
+/GUI/
+/image/

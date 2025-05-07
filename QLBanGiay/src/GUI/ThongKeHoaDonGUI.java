@@ -6,7 +6,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileOutputStream;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -25,21 +30,33 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.category.DefaultCategoryDataset;
 
+import BUS.ThongKeHoaDonBUS;
 import DAO.ThongKeDAO;
+import DTO.ChiTietHDDTO;
+import DTO.HoaDonDTO;
+import DTO.ThongKeDoanhThuDTO;
 
 public class ThongKeHoaDonGUI extends JPanel {
     private static final long serialVersionUID = 1L;
     private ThongKeDAO thongKeDAO;
+    private ThongKeHoaDonBUS thongKeBUS;
     private JLabel lblTongSoHoaDon, lblTongGiaTri, lblSoLuongSanPham;
     private JTextField txtTuNgay, txtDenNgay;
     private JComboBox<String> cboxNam, cboxLoaiThongKe;
     private DefaultTableModel tableModel;
     private JTable table;
-
-    public ThongKeHoaDonGUI() 
-    {
+    private DecimalFormat formatter = new DecimalFormat("#,###");
+    private JPanel pChart;
+    public ThongKeHoaDonGUI() {
+        thongKeDAO = new ThongKeDAO();
+        thongKeBUS = new ThongKeHoaDonBUS();
         initComponents();
+        loadDefaultStatistics();
     }
 
     private void initComponents() {
@@ -66,7 +83,7 @@ public class ThongKeHoaDonGUI extends JPanel {
         lblTongSoHoaDon.setFont(new Font("Arial", Font.PLAIN, 16));
         pSummary.add(lblTongSoHoaDon);
 
-        lblTongGiaTri = new JLabel("Tổng giá trị: 0đ");
+        lblTongGiaTri = new JLabel("Tổng doanh thu: 0đ");
         lblTongGiaTri.setBounds(420, 30, 300, 40);
         lblTongGiaTri.setFont(new Font("Arial", Font.PLAIN, 16));
         pSummary.add(lblTongGiaTri);
@@ -120,7 +137,7 @@ public class ThongKeHoaDonGUI extends JPanel {
         lblLoaiThongKe.setFont(new Font("Arial", Font.PLAIN, 14));
         pFilter.add(lblLoaiThongKe);
 
-        String[] loaiThongKe = {"Theo tháng", "Theo khách hàng", "Theo nhân viên", "Theo sản phẩm"};
+        String[] loaiThongKe = {"Theo ngày", "Theo tháng", "Theo khách hàng", "Theo nhân viên", "Theo sản phẩm"};
         cboxLoaiThongKe = new JComboBox<>(loaiThongKe);
         cboxLoaiThongKe.setBounds(740, 15, 150, 30);
         pFilter.add(cboxLoaiThongKe);
@@ -135,28 +152,364 @@ public class ThongKeHoaDonGUI extends JPanel {
         btnXuatExcel.setFont(new Font("Arial", Font.PLAIN, 14));
         pFilter.add(btnXuatExcel);
 
-        // Placeholder cho biểu đồ cột
-        JPanel pChart = new JPanel();
+        // Panel cho biểu đồ cột
+//        JPanel pChart = new JPanel();
+        pChart = new JPanel();
         pChart.setBounds(20, 250, 1188, 200);
         pChart.setBackground(Color.WHITE);
         pChart.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         pChart.setLayout(null);
         add(pChart);
 
-        JLabel lblChartPlaceholder = new JLabel("Biểu đồ cột (Thống kê hóa đơn theo tháng)", SwingConstants.CENTER);
-        lblChartPlaceholder.setBounds(0, 0, 1188, 200);
-        lblChartPlaceholder.setFont(new Font("Arial", Font.PLAIN, 14));
-        pChart.add(lblChartPlaceholder);
-
         // Bảng dữ liệu chi tiết
-        String[] columnNames = {"Tháng/Mã", "Số lượng hóa đơn/Tên", "Tổng giá trị", "Số lượng sản phẩm"};
+        String[] columnNames = {"Ngày/Tháng/Mã", "Số lượng hóa đơn/Tên", "Doanh thu", "Chi phí", "Lợi nhuận"};
         tableModel = new DefaultTableModel(columnNames, 0);
         table = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBounds(20, 460, 1188, 200);
         add(scrollPane);
 
-     
+        // Sự kiện nút Lọc
+        btnFilter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filterStatistics();
+            }
+        });
 
+        // Sự kiện nút Xuất Excel
+        btnXuatExcel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exportToExcel();
+            }
+        });
+    }
+
+    private void loadDefaultStatistics() {
+        // Cập nhật tổng số hóa đơn, tổng doanh thu, số lượng sản phẩm
+        int tongSoHoaDon = thongKeBUS.tinhTongSoHoaDon();
+        double tongDoanhThu = thongKeBUS.tinhTongDoanhThu();
+        int soLuongSanPham = thongKeBUS.tinhTongSoLuongSanPhamBanRa();
+
+        lblTongSoHoaDon.setText("Tổng số hóa đơn: " + tongSoHoaDon);
+        lblTongGiaTri.setText("Tổng doanh thu: " + formatter.format(tongDoanhThu) + "đ");
+        lblSoLuongSanPham.setText("Số lượng sản phẩm: " + soLuongSanPham);
+
+        // Mặc định hiển thị thống kê theo tháng của năm hiện tại
+        String selectedYear = cboxNam.getSelectedItem().toString();
+        try {
+            int year = Integer.parseInt(selectedYear);
+            loadThongKeTheoThang(year);
+            updateChart(null, null, year, cboxLoaiThongKe.getSelectedItem().toString());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Năm không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void filterStatistics() {
+        String tuNgay = txtTuNgay.getText().trim();
+        String denNgay = txtDenNgay.getText().trim();
+        String selectedYear = cboxNam.getSelectedItem().toString();
+        String loaiThongKe = cboxLoaiThongKe.getSelectedItem().toString();
+
+        // Kiểm tra nếu cả hai trường ngày đều rỗng và loại thống kê yêu cầu ngày
+        if ((tuNgay.isEmpty() && denNgay.isEmpty()) && loaiThongKe.equals("Theo ngày")) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập cả 'Từ ngày' và 'Đến ngày' để lọc theo ngày!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Validate và ghép năm từ cboxNam với định dạng MM-dd
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        dateFormat.setLenient(false);
+        java.sql.Date startDate = null, endDate = null;
+
+        try {
+            if (!tuNgay.isEmpty()) {
+                String fullTuNgay = selectedYear + "-" + tuNgay; // Ghép năm với MM-dd
+                Date parsedDate = dateFormat.parse(fullTuNgay);
+                startDate = new java.sql.Date(parsedDate.getTime());
+            }
+            if (!denNgay.isEmpty()) {
+                String fullDenNgay = selectedYear + "-" + denNgay; // Ghép năm với MM-dd
+                Date parsedDate = dateFormat.parse(fullDenNgay);
+                endDate = new java.sql.Date(parsedDate.getTime());
+            }
+            if (startDate != null && endDate != null && startDate.after(endDate)) {
+                JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được sau ngày kết thúc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Định dạng ngày không hợp lệ (MM-dd) hoặc dữ liệu không đúng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Tạo biến tạm thời để sử dụng trong stream
+        java.sql.Date finalStartDate = startDate;
+        java.sql.Date finalEndDate = endDate;
+
+        // Cập nhật tổng số hóa đơn, tổng doanh thu, số lượng sản phẩm
+        List<HoaDonDTO> danhSachHoaDon = thongKeBUS.getDanhSachHoaDon();
+        List<HoaDonDTO> filteredHoaDonList = danhSachHoaDon.stream()
+                .filter(hd -> (finalStartDate == null || !hd.getNgayLap().before(finalStartDate)))
+                .filter(hd -> (finalEndDate == null || !hd.getNgayLap().after(finalEndDate)))
+                .collect(Collectors.toList());
+
+        int tongSoHoaDon = filteredHoaDonList.size();
+        double tongDoanhThu = filteredHoaDonList.stream().mapToDouble(HoaDonDTO::getTongTien).sum();
+        int soLuongSanPham = thongKeBUS.getDanhSachChiTietHoaDon().stream()
+                .filter(ct -> filteredHoaDonList.stream().anyMatch(hd -> hd.getMaHD().equals(ct.getMaHD())))
+                .mapToInt(ChiTietHDDTO::getSoLuong)
+                .sum();
+
+        lblTongSoHoaDon.setText("Tổng số hóa đơn: " + tongSoHoaDon);
+        lblTongGiaTri.setText("Tổng doanh thu: " + formatter.format(tongDoanhThu) + "đ");
+        lblSoLuongSanPham.setText("Số lượng sản phẩm: " + soLuongSanPham);
+
+        // Cập nhật bảng theo loại thống kê
+        tableModel.setRowCount(0);
+        int year = 0;
+        try {
+            year = Integer.parseInt(selectedYear);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Năm không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        switch (loaiThongKe) {
+            case "Theo ngày":
+                if (startDate != null && endDate != null) {
+                    loadThongKeTheoNgay(startDate, endDate);
+                    updateChart(startDate, endDate, null, loaiThongKe);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Vui lòng nhập cả ngày bắt đầu và ngày kết thúc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+                break;
+            case "Theo tháng":
+                loadThongKeTheoThang(year);
+                updateChart(null, null, year, loaiThongKe);
+                break;
+            case "Theo khách hàng":
+                loadThongKeTheoKhachHang();
+                updateChart(null, null, null, loaiThongKe);
+                break;
+            case "Theo nhân viên":
+                loadThongKeTheoNhanVien();
+                updateChart(null, null, null, loaiThongKe);
+                break;
+            case "Theo sản phẩm":
+                loadThongKeTheoSanPham();
+                updateChart(null, null, null, loaiThongKe);
+                break;
+        }
+    }
+
+    private void loadThongKeTheoNgay(java.sql.Date tuNgay, java.sql.Date denNgay) {
+        ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTuNgayDenNgay(tuNgay, denNgay);
+        for (ThongKeDoanhThuDTO tk : thongKeList) {
+            int soHoaDon = thongKeBUS.getDanhSachHoaDon().stream()
+                    .filter(hd -> hd.getNgayLap().toLocalDate().equals(tk.getNgay().toLocalDate()))
+                    .collect(Collectors.toList()).size();
+            tableModel.addRow(new Object[]{
+                    tk.getNgay(),
+                    soHoaDon,
+                    formatter.format(tk.getDoanhThu()),
+                    formatter.format(tk.getChiPhi()),
+                    formatter.format(tk.getLoiNhuan())
+            });
+        }
+    }
+
+    private void loadThongKeTheoThang(int nam) {
+        ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTheoThang(nam);
+        for (ThongKeDoanhThuDTO tk : thongKeList) {
+            int soHoaDon = thongKeBUS.getDanhSachHoaDon().stream()
+                    .filter(hd -> hd.getNgayLap().toLocalDate().getYear() == nam && hd.getNgayLap().toLocalDate().getMonthValue() == tk.getThang())
+                    .collect(Collectors.toList()).size();
+            tableModel.addRow(new Object[]{
+                    "Tháng " + tk.getThang(),
+                    soHoaDon,
+                    formatter.format(tk.getDoanhThu()),
+                    formatter.format(tk.getChiPhi()),
+                    formatter.format(tk.getLoiNhuan())
+            });
+        }
+    }
+
+    private void loadThongKeTheoKhachHang() {
+        Map<String, Double> thongKe = thongKeBUS.thongKeTheoKhachHang();
+        for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
+            String maKH = entry.getKey();
+            double doanhThu = entry.getValue();
+            int soHoaDon = thongKeBUS.getDanhSachHoaDon().stream()
+                    .filter(hd -> hd.getMaKH().equals(maKH))
+                    .collect(Collectors.toList()).size();
+            tableModel.addRow(new Object[]{
+                    maKH,
+                    soHoaDon,
+                    formatter.format(doanhThu),
+                    "", // Không có chi phí
+                    ""  // Không có lợi nhuận
+            });
+        }
+    }
+
+    private void loadThongKeTheoNhanVien() {
+        Map<String, Double> thongKe = thongKeBUS.thongKeTheoNhanVien();
+        for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
+            String maNV = entry.getKey();
+            double doanhThu = entry.getValue();
+            int soHoaDon = thongKeBUS.getDanhSachHoaDon().stream()
+                    .filter(hd -> hd.getMaNV().equals(maNV))
+                    .collect(Collectors.toList()).size();
+            tableModel.addRow(new Object[]{
+                    maNV,
+                    soHoaDon,
+                    formatter.format(doanhThu),
+                    "", // Không có chi phí
+                    ""  // Không có lợi nhuận
+            });
+        }
+    }
+
+    private void loadThongKeTheoSanPham() {
+        Map<String, Double> thongKe = thongKeBUS.thongKeTheoSanPham();
+        for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
+            String maSP = entry.getKey();
+            double doanhThu = entry.getValue();
+            int soLuongSanPham = thongKeBUS.getDanhSachChiTietHoaDon().stream()
+                    .filter(ct -> ct.getMaSP().equals(maSP))
+                    .mapToInt(ChiTietHDDTO::getSoLuong)
+                    .sum();
+            tableModel.addRow(new Object[]{
+                    maSP,
+                    soLuongSanPham,
+                    formatter.format(doanhThu),
+                    "", // Không có chi phí
+                    ""  // Không có lợi nhuận
+            });
+        }
+    }
+
+    private void exportToExcel() {
+        try {
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("ThongKeHoaDon");
+
+            // Tạo header
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < tableModel.getColumnCount(); i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(tableModel.getColumnName(i));
+            }
+
+            // Tạo dữ liệu
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                Row row = sheet.createRow(i + 1);
+                for (int j = 0; j < tableModel.getColumnCount(); j++) {
+                    Cell cell = row.createCell(j);
+                    Object value = tableModel.getValueAt(i, j);
+                    cell.setCellValue(value != null ? value.toString() : "");
+                }
+            }
+
+            // Lưu file
+            String filePath = "ThongKeHoaDon.xlsx";
+            try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+                workbook.write(fileOut);
+            }
+            workbook.close();
+            JOptionPane.showMessageDialog(this, "Xuất Excel thành công: " + filePath);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+//    private void updateChart(java.sql.Date startDate, java.sql.Date endDate, Integer nam, String loaiThongKe) {
+//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+//
+//        if (loaiThongKe.equals("Theo ngày") && startDate != null && endDate != null) {
+//            ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTuNgayDenNgay(startDate, endDate);
+//            for (ThongKeDoanhThuDTO tk : thongKeList) {
+//                dataset.addValue(tk.getDoanhThu(), "Doanh thu", tk.getNgay().toString());
+//            }
+//        } else if (loaiThongKe.equals("Theo tháng") && nam != null) {
+//            ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTheoThang(nam);
+//            for (ThongKeDoanhThuDTO tk : thongKeList) {
+//                dataset.addValue(tk.getDoanhThu(), "Doanh thu", "Tháng " + tk.getThang());
+//            }
+//        } else if (loaiThongKe.equals("Theo khách hàng")) {
+//            Map<String, Double> thongKe = thongKeBUS.thongKeTheoKhachHang();
+//            for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
+//                dataset.addValue(entry.getValue(), "Doanh thu", entry.getKey());
+//            }
+//        } else if (loaiThongKe.equals("Theo nhân viên")) {
+//            Map<String, Double> thongKe = thongKeBUS.thongKeTheoNhanVien();
+//            for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
+//                dataset.addValue(entry.getValue(), "Doanh thu", entry.getKey());
+//            }
+//        } else if (loaiThongKe.equals("Theo sản phẩm")) {
+//            Map<String, Double> thongKe = thongKeBUS.thongKeTheoSanPham();
+//            for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
+//                dataset.addValue(entry.getValue(), "Doanh thu", entry.getKey());
+//            }
+//        } else {
+//            // Không có dữ liệu để vẽ biểu đồ, giữ nguyên panel trống
+//            pChart.removeAll();
+//            pChart.revalidate();
+//            pChart.repaint();
+//            return;
+//        }
+//
+//        JFreeChart chart = ChartFactory.createBarChart(
+//            "Biểu đồ thống kê doanh thu",
+//            "Thời gian/Mã",
+//            "Doanh thu (VNĐ)",
+//            dataset
+//        );
+//        ChartPanel chartPanel = new ChartPanel(chart);
+//        chartPanel.setBounds(0, 0, 1188, 200);
+//        pChart.removeAll();
+//        pChart.add(chartPanel);
+//        pChart.revalidate();
+//        pChart.repaint();
+//    }
+    private void updateChart(java.sql.Date startDate, java.sql.Date endDate, Integer nam, String loaiThongKe) {
+        if (pChart == null) {
+            JOptionPane.showMessageDialog(this, "Biểu đồ chưa được khởi tạo!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        if (loaiThongKe.equals("Theo ngày") && startDate != null && endDate != null) {
+            ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTuNgayDenNgay(startDate, endDate);
+            for (ThongKeDoanhThuDTO tk : thongKeList) {
+                dataset.addValue(tk.getDoanhThu(), "Doanh thu", tk.getNgay().toString());
+            }
+        } else if (loaiThongKe.equals("Theo tháng") && nam != null) {
+            ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTheoThang(nam);
+            for (ThongKeDoanhThuDTO tk : thongKeList) {
+                dataset.addValue(tk.getDoanhThu(), "Doanh thu", "Tháng " + tk.getThang());
+            }
+        } else {
+            pChart.removeAll();
+            pChart.revalidate();
+            pChart.repaint();
+            return;
+        }
+
+        JFreeChart chart = ChartFactory.createBarChart(
+            "Biểu đồ thống kê doanh thu",
+            "Thời gian/Mã",
+            "Doanh thu (VNĐ)",
+            dataset
+        );
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setBounds(0, 0, 1188, 200);
+        pChart.removeAll();
+        pChart.add(chartPanel);
+        pChart.revalidate();
+        pChart.repaint();
     }
 }
