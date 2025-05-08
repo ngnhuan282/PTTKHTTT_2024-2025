@@ -26,6 +26,12 @@ public class HoaDonBUS {
 		this.listHoaDon = listHoaDon;
 	}
 	
+	public void docDSHD() throws SQLException
+	{
+		HoaDonDAO dao = new HoaDonDAO();
+		listHoaDon = dao.getListHoaDon();
+	}
+	
 	public String getMaHD() {
 		int size = listHoaDon.size() + 1;
 		while(checkDuplicateMaHD(size+""))
