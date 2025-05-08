@@ -157,4 +157,17 @@ public class SanPhamBUS {
         docDSSP(); // Cập nhật DSSP
         return result;
     }
+    public String getTenSP(String maSP) {
+        if (dssp == null || dssp.isEmpty()) {
+            docDSSP();  // đảm bảo luôn load dữ liệu trước
+        }
+        for (SanPhamDTO sp : dssp) {
+            if (sp.getMaSP().equals(maSP)) {
+                return sp.getTenSP();
+            }
+        }
+        return "Không xác định";
+    }
+
+
 }

@@ -23,8 +23,8 @@ public class ChiTietHoaDonBUS {
 		this.listCTHD = listCTHD;
 	}
 	
-	public void addCTHD(String maHD, String maSP, int soLuong, double donGia, double thanhTien) {
-		ChiTietHDDTO chiTietHDDTO = new ChiTietHDDTO(maHD, maSP, soLuong, donGia, thanhTien);
+	public void addCTHD(String maHD, String maSP, int soLuong, double donGia, double thanhTien, String trangThai,String maHTTT) {
+		ChiTietHDDTO chiTietHDDTO = new ChiTietHDDTO(maHD, maSP, soLuong, donGia, thanhTien,trangThai,maHTTT);
 		listCTHD.add(chiTietHDDTO);
 		chiTietHoaDonDAO.addCTHD(chiTietHDDTO);
 	}
@@ -89,4 +89,22 @@ public class ChiTietHoaDonBUS {
 	public void updateSoLuongSP(String maSP, int soLuong) {
 		chiTietHoaDonDAO.updateSoLuongSP(maSP, soLuong);
 	}
+    public void docDSCTHD() throws SQLException {
+        listCTHD = chiTietHoaDonDAO.getListCTHD(); // lấy danh sách mới từ DAO
+    }
+    public boolean capNhatTrangThaiTheoMaHD(String maHD, String trangThaiMoi) {
+        boolean result = chiTietHoaDonDAO.capNhatTrangThaiTheoMaHD(maHD, trangThaiMoi);
+        if (result) {
+            try {
+                this.docDSCTHD(); // Load lại listCTHD từ DB
+            } catch (SQLException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return result;
+    }
+
+
+
 }

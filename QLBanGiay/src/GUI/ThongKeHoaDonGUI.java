@@ -618,4 +618,9 @@ public class ThongKeHoaDonGUI extends JPanel {
             g2.dispose();
         }
     }
+    
+    public void refreshThongKe() {
+        loadDefaultStatistics();
+    }
+
 }

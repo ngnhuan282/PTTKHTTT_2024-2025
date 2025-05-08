@@ -74,4 +74,19 @@ public class MySQLConnect {
 			return true;
 		return false;
 	}
+	public int executeUpdateReturnRowCount(String sql) {
+	    int result = 0;
+	    try {
+	        Connect();
+	        st = conn.createStatement();
+	        result = st.executeUpdate(sql); // trả về số dòng bị ảnh hưởng
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        disConnect();
+	    }
+	    return result;
+	}
+
+
 }

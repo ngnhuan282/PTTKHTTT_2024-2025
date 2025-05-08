@@ -6,18 +6,42 @@ public class ChiTietHDDTO {
 	private int soLuong;
 	private double donGia;
 	private double thanhTien;
-	
+	private String trangThai;
+	private String maHTTT;
+
 	public ChiTietHDDTO() {
 	}
 
-	public ChiTietHDDTO(String maHD, String maSP, int soLuong, double donGia, double thanhTien) {
+	public ChiTietHDDTO(String maHD, String maSP, int soLuong, double donGia, double thanhTien, String trangThai,String maHTTT ) {
 		this.maHD = maHD;
 		this.maSP = maSP;
 		this.soLuong = soLuong;
 		this.donGia = donGia;
 		this.thanhTien = thanhTien;
+		this.trangThai = trangThai;
+		this.maHTTT = maHTTT;
 	}
 
+	public String getMaTTT()
+	{
+		return maHTTT;
+	}
+	
+	public String getTrangThai()
+	{
+		return trangThai;
+	}
+	
+	public void setMaHTTT(String maHTTT)
+	{
+		this.maHTTT = maHTTT;
+	}
+	
+	public void setTrangThai(String trangThai)
+	{
+		this.trangThai = trangThai;
+	}
+	
 	public String getMaHD() {
 		return maHD;
 	}

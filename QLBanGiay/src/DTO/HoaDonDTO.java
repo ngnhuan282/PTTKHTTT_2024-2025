@@ -24,7 +24,6 @@ public class HoaDonDTO {
 	public String getMaHD() {
 		return maHD;
 	}
-
 	public void setMaHD(String maHD) {
 		this.maHD = maHD;
 	}

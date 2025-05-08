@@ -213,10 +213,10 @@ public class KhachHangGUI extends JPanel implements ActionListener {
         btnLamMoi.setBounds(1045, 31, 126, 28);
         btnLamMoi.setActionCommand("Reload");
         btnLamMoi.addActionListener(e -> {
-        	btnLamMoi.setVisible(false);
+        	btnLamMoi.setVisible(true);
         	fillTableWithSampleData();
         });
-        btnLamMoi.setVisible(false);
+        btnLamMoi.setVisible(true);
         pHeaderMain.add(btnLamMoi);
         
         JButton btnSearch = new JButton("");
