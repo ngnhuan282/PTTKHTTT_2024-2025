@@ -39,6 +39,9 @@ public class ThongKeGUI extends JPanel {
         // Tab 3: Hóa đơn (Gọi từ ThongKeHoaDonGUI)
         ThongKeHoaDonGUI pHoaDon = new ThongKeHoaDonGUI();
         tabbedPane.addTab("Hóa đơn", pHoaDon);
+        
+        ThongKeNhaCungCapGUI pNCC = new ThongKeNhaCungCapGUI();
+        tabbedPane.addTab("Nhà cung cấp", pNCC);
 
         // --- Thiết kế Tab Tổng quan ---
         // Header: TỔNG QUAN

@@ -445,53 +445,75 @@ public class ThongKeHoaDonGUI extends JPanel {
 
     private void updateChart(java.sql.Date startDate, java.sql.Date endDate, Integer nam, String loaiThongKe) {
         double[] revenue = null;
+        double[] cost = null;
+        double[] profit = null;
         String[] labels = null;
 
         if (loaiThongKe.equals("Theo ngày") && startDate != null && endDate != null) {
             ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTuNgayDenNgay(startDate, endDate);
             revenue = new double[thongKeList.size()];
+            cost = new double[thongKeList.size()];
+            profit = new double[thongKeList.size()];
             labels = new String[thongKeList.size()];
             for (int i = 0; i < thongKeList.size(); i++) {
                 ThongKeDoanhThuDTO tk = thongKeList.get(i);
                 revenue[i] = tk.getDoanhThu();
+                cost[i] = tk.getChiPhi();
+                profit[i] = tk.getLoiNhuan();
                 labels[i] = new SimpleDateFormat("dd/MM").format(tk.getNgay());
             }
         } else if (loaiThongKe.equals("Theo tháng") && nam != null) {
             ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTheoThang(nam);
             revenue = new double[thongKeList.size()];
+            cost = new double[thongKeList.size()];
+            profit = new double[thongKeList.size()];
             labels = new String[thongKeList.size()];
             for (int i = 0; i < thongKeList.size(); i++) {
                 ThongKeDoanhThuDTO tk = thongKeList.get(i);
                 revenue[i] = tk.getDoanhThu();
+                cost[i] = tk.getChiPhi();
+                profit[i] = tk.getLoiNhuan();
                 labels[i] = "Tháng " + tk.getThang();
             }
         } else if (loaiThongKe.equals("Theo khách hàng")) {
             Map<String, Double> thongKe = thongKeBUS.thongKeTheoKhachHang();
             revenue = new double[thongKe.size()];
+            cost = new double[thongKe.size()];
+            profit = new double[thongKe.size()];
             labels = new String[thongKe.size()];
             int index = 0;
             for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
                 revenue[index] = entry.getValue();
+                cost[index] = 0; // Không có chi phí
+                profit[index] = 0; // Không có lợi nhuận
                 labels[index] = entry.getKey();
                 index++;
             }
         } else if (loaiThongKe.equals("Theo nhân viên")) {
             Map<String, Double> thongKe = thongKeBUS.thongKeTheoNhanVien();
             revenue = new double[thongKe.size()];
+            cost = new double[thongKe.size()];
+            profit = new double[thongKe.size()];
             labels = new String[thongKe.size()];
             int index = 0;
             for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
                 revenue[index] = entry.getValue();
+                cost[index] = 0; // Không có chi phí
+                profit[index] = 0; // Không có lợi nhuận
                 labels[index] = entry.getKey();
                 index++;
             }
         } else if (loaiThongKe.equals("Theo sản phẩm")) {
             Map<String, Double> thongKe = thongKeBUS.thongKeTheoSanPham();
             revenue = new double[thongKe.size()];
+            cost = new double[thongKe.size()];
+            profit = new double[thongKe.size()];
             labels = new String[thongKe.size()];
             int index = 0;
             for (Map.Entry<String, Double> entry : thongKe.entrySet()) {
                 revenue[index] = entry.getValue();
+                cost[index] = 0; // Không có chi phí
+                profit[index] = 0; // Không có lợi nhuận
                 labels[index] = entry.getKey();
                 index++;
             }
@@ -505,7 +527,7 @@ public class ThongKeHoaDonGUI extends JPanel {
 
         // Cập nhật biểu đồ
         pChart.removeAll();
-        CustomChartPanel chartPanel = new CustomChartPanel(revenue, labels);
+        CustomChartPanel chartPanel = new CustomChartPanel(revenue, cost, profit, labels);
         chartPanel.setBounds(0, 0, 1188, 200);
         pChart.add(chartPanel);
         pChart.revalidate();
@@ -514,12 +536,16 @@ public class ThongKeHoaDonGUI extends JPanel {
 
     // Lớp CustomChartPanel để vẽ biểu đồ cột
     class CustomChartPanel extends JPanel {
-        private double[] values;
+        private double[] revenue;
+        private double[] cost;
+        private double[] profit;
         private String[] labels;
         private DecimalFormat df = new DecimalFormat("#,###");
 
-        public CustomChartPanel(double[] values, String[] labels) {
-            this.values = values;
+        public CustomChartPanel(double[] revenue, double[] cost, double[] profit, String[] labels) {
+            this.revenue = revenue;
+            this.cost = cost;
+            this.profit = profit;
             this.labels = labels;
             setOpaque(false);
         }
@@ -534,12 +560,15 @@ public class ThongKeHoaDonGUI extends JPanel {
             int height = getHeight();
             int padding = 50;
             int labelPadding = 20;
-            int barWidth = 40;
+            int barWidth = 20; // Giảm chiều rộng cột để chứa 3 cột mỗi nhóm
+            int barGap = 5; // Khoảng cách giữa các cột trong một nhóm
 
             // Tìm giá trị lớn nhất để tính tỷ lệ chiều cao
             double maxValue = 0;
-            for (double value : values) {
-                maxValue = Math.max(maxValue, value);
+            for (int i = 0; i < revenue.length; i++) {
+                maxValue = Math.max(maxValue, revenue[i]);
+                maxValue = Math.max(maxValue, cost[i]);
+                maxValue = Math.max(maxValue, profit[i]);
             }
             if (maxValue == 0) maxValue = 1; // Tránh chia cho 0
 
@@ -577,43 +606,105 @@ public class ThongKeHoaDonGUI extends JPanel {
                 g2.drawLine(padding, y, width - padding, y);
             }
 
-            // Tính khoảng cách giữa các cột
-            int totalBars = values.length;
-            int barSpacing = totalBars > 0 ? (width - 2 * padding - totalBars * barWidth) / (totalBars + 1) : 0;
+            // Tính khoảng cách giữa các nhóm cột
+            int totalGroups = labels.length;
+            int groupWidth = barWidth * 3 + barGap * 2; // Chiều rộng của một nhóm (3 cột + 2 khoảng cách)
+            int barSpacing = totalGroups > 0 ? (width - 2 * padding - totalGroups * groupWidth) / (totalGroups + 1) : 0;
             if (barSpacing < 10) barSpacing = 10; // Đảm bảo có khoảng cách tối thiểu
 
             // Vẽ các cột
-            for (int i = 0; i < values.length; i++) {
-                int x = padding + (i + 1) * barSpacing + i * barWidth;
-                double barHeight = (values[i] / maxValue) * (height - 2 * padding - labelPadding);
-                int y = (int) (height - padding - barHeight);
+            for (int i = 0; i < labels.length; i++) {
+                int groupX = padding + (i + 1) * barSpacing + i * groupWidth;
 
-                // Vẽ cột với màu gradient
-                GradientPaint gradient = new GradientPaint(x, y, new Color(33, 150, 243), x, (int) (height - padding), new Color(100, 181, 246));
-                g2.setPaint(gradient);
-                g2.fillRoundRect(x, y, barWidth, (int) barHeight, 10, 10);
-
-                // Vẽ viền cột
+                // Vẽ cột Doanh thu
+                int xRevenue = groupX;
+                double barHeightRevenue = (revenue[i] / maxValue) * (height - 2 * padding - labelPadding);
+                int yRevenue = (int) (height - padding - barHeightRevenue);
+                GradientPaint gradientRevenue = new GradientPaint(xRevenue, yRevenue, new Color(33, 150, 243), xRevenue, (int) (height - padding), new Color(100, 181, 246));
+                g2.setPaint(gradientRevenue);
+                g2.fillRoundRect(xRevenue, yRevenue, barWidth, (int) barHeightRevenue, 10, 10);
                 g2.setColor(new Color(0, 120, 215));
                 g2.setStroke(new BasicStroke(1));
-                g2.drawRoundRect(x, y, barWidth, (int) barHeight, 10, 10);
+                g2.drawRoundRect(xRevenue, yRevenue, barWidth, (int) barHeightRevenue, 10, 10);
+                if (revenue[i] > 0) {
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("Arial", Font.PLAIN, 10));
+                    String valueStr = df.format(revenue[i]);
+                    int strWidth = g2.getFontMetrics().stringWidth(valueStr);
+                    g2.drawString(valueStr, xRevenue + (barWidth - strWidth) / 2, yRevenue - 5);
+                }
 
-                // Vẽ giá trị trên cột
-                g2.setColor(Color.BLACK);
-                g2.setFont(new Font("Arial", Font.PLAIN, 12));
-                String valueStr = df.format(values[i]);
-                int strWidth = g2.getFontMetrics().stringWidth(valueStr);
-                g2.drawString(valueStr, x + (barWidth - strWidth) / 2, y - 5);
+                // Vẽ cột Chi phí
+                int xCost = groupX + barWidth + barGap;
+                double barHeightCost = (cost[i] / maxValue) * (height - 2 * padding - labelPadding);
+                int yCost = (int) (height - padding - barHeightCost);
+                GradientPaint gradientCost = new GradientPaint(xCost, yCost, new Color(255, 87, 34), xCost, (int) (height - padding), new Color(255, 138, 101));
+                g2.setPaint(gradientCost);
+                g2.fillRoundRect(xCost, yCost, barWidth, (int) barHeightCost, 10, 10);
+                g2.setColor(new Color(200, 60, 20));
+                g2.setStroke(new BasicStroke(1));
+                g2.drawRoundRect(xCost, yCost, barWidth, (int) barHeightCost, 10, 10);
+                if (cost[i] > 0) {
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("Arial", Font.PLAIN, 10));
+                    String valueStr = df.format(cost[i]);
+                    int strWidth = g2.getFontMetrics().stringWidth(valueStr);
+                    g2.drawString(valueStr, xCost + (barWidth - strWidth) / 2, yCost - 5);
+                }
 
-                // Vẽ nhãn dưới cột
+                // Vẽ cột Lợi nhuận
+                int xProfit = groupX + (barWidth + barGap) * 2;
+                double barHeightProfit = (profit[i] / maxValue) * (height - 2 * padding - labelPadding);
+                int yProfit = (int) (height - padding - barHeightProfit);
+                GradientPaint gradientProfit = new GradientPaint(xProfit, yProfit, new Color(76, 175, 80), xProfit, (int) (height - padding), new Color(129, 199, 132));
+                g2.setPaint(gradientProfit);
+                g2.fillRoundRect(xProfit, yProfit, barWidth, (int) barHeightProfit, 10, 10);
+                g2.setColor(new Color(46, 125, 50));
+                g2.setStroke(new BasicStroke(1));
+                g2.drawRoundRect(xProfit, yProfit, barWidth, (int) barHeightProfit, 10, 10);
+                if (profit[i] > 0) {
+                    g2.setColor(Color.BLACK);
+                    g2.setFont(new Font("Arial", Font.PLAIN, 10));
+                    String valueStr = df.format(profit[i]);
+                    int strWidth = g2.getFontMetrics().stringWidth(valueStr);
+                    g2.drawString(valueStr, xProfit + (barWidth - strWidth) / 2, yProfit - 5);
+                }
+
+                // Vẽ nhãn dưới nhóm cột
                 String label = labels[i];
                 int labelWidth = g2.getFontMetrics().stringWidth(label);
-                g2.drawString(label, x + (barWidth - labelWidth) / 2, height - padding + labelPadding);
+                int labelX = groupX + (groupWidth - labelWidth) / 2;
+                g2.setColor(Color.BLACK);
+                g2.setFont(new Font("Arial", Font.PLAIN, 12));
+                g2.drawString(label, labelX, height - padding + labelPadding);
             }
 
             // Vẽ nhãn trục X
             g2.setFont(new Font("Arial", Font.BOLD, 14));
             g2.drawString("Thời gian/Mã", width / 2 - 50, height - 10);
+
+            // Vẽ chú thích (legend)
+            int legendX = padding;
+            int legendY = padding - 40;
+            g2.setFont(new Font("Arial", Font.PLAIN, 12));
+            // Doanh thu
+            g2.setColor(new Color(33, 150, 243));
+            g2.fillRect(legendX, legendY, 15, 15);
+            g2.setColor(Color.BLACK);
+            g2.drawRect(legendX, legendY, 15, 15);
+            g2.drawString("Doanh thu", legendX + 20, legendY + 12);
+            // Chi phí
+            g2.setColor(new Color(255, 87, 34));
+            g2.fillRect(legendX + 80, legendY, 15, 15);
+            g2.setColor(Color.BLACK);
+            g2.drawRect(legendX + 80, legendY, 15, 15);
+            g2.drawString("Chi phí", legendX + 100, legendY + 12);
+            // Lợi nhuận
+            g2.setColor(new Color(76, 175, 80));
+            g2.fillRect(legendX + 160, legendY, 15, 15);
+            g2.setColor(Color.BLACK);
+            g2.drawRect(legendX + 160, legendY, 15, 15);
+            g2.drawString("Lợi nhuận", legendX + 180, legendY + 12);
 
             g2.dispose();
         }
@@ -622,5 +713,4 @@ public class ThongKeHoaDonGUI extends JPanel {
     public void refreshThongKe() {
         loadDefaultStatistics();
     }
-
 }

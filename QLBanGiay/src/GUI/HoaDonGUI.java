@@ -709,9 +709,10 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         panel_3.add(comboBoxHTTT);
 
         // Đặt nút Xác nhận ngay bên cạnh comboBox
-        btnXacNhanHD = new JButton("Xác nhận");
-        btnXacNhanHD.setBounds(308, 265, 100, 31);
-        btnXacNhanHD.setBackground(Color.ORANGE);
+        btnXacNhanHD = new JButton("");
+        btnXacNhanHD.setBounds(390, 260, 50, 38);
+        btnXacNhanHD.setIcon(new ImageIcon(HoaDonGUI.class.getResource("/image/lock_icon.png")));
+        btnXacNhanHD.setBackground(Color.WHITE);
         panel_3.add(btnXacNhanHD);
 
         btnXacNhanHD.addActionListener(e -> {
@@ -892,7 +893,7 @@ public class HoaDonGUI extends JPanel implements ActionListener {
             thanhTien = donGia * soLuong;
 
             HTTTDTO selectedHTTT = (HTTTDTO) comboBoxHTTT.getSelectedItem();
-            String maHTTT = selectedHTTT != null ? selectedHTTT.getMaHTTT() : "HTTT01";
+            String maHTTT = selectedHTTT != null ? selectedHTTT.getMaHTTT() : "";
             listTemp.add(new ChiTietHDDTO(maHD, maSP, soLuong, donGia, thanhTien, "0", maHTTT));
 
             donGia = 0;
@@ -1237,12 +1238,15 @@ public class HoaDonGUI extends JPanel implements ActionListener {
     }
 
     private String getTenHTTT(String maHTTT) {
+        if (maHTTT == null || maHTTT.trim().isEmpty()) {
+            return "Chưa xác định";
+        }
         for (HTTTDTO h : htttBUS.getListHTTT()) {
             if (h.getMaHTTT().equals(maHTTT)) {
                 return h.getTenHTTT();
             }
         }
-        return "Không xác định";
+        return "Chưa xác định";
     }
 
     private void openBillDetailTable() {
