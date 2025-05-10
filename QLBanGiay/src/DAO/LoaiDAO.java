@@ -18,7 +18,7 @@ public class LoaiDAO {
 	{	
 		ArrayList<LoaiDTO> dsloai = new ArrayList<LoaiDTO>();
 		try {
-			String sql = "SELECT * FROM loaisanpham";
+			String sql = "SELECT * FROM phanloai";
 			ResultSet rs = mysql.executeQuery(sql);
 			while(rs.next())
 			{
@@ -37,7 +37,7 @@ public class LoaiDAO {
 	public void add(LoaiDTO loai)
 	{
 		try {
-			String sql = "INSERT INTO loaisanpham (TenLoaiSP) VALUES(";
+			String sql = "INSERT INTO phanloai (TenLoaiSP) VALUES(";
 			sql += "'" + loai.getTenLoaiSP() + "')";
 			mysql.executeUpdate(sql);
 		} catch (Exception e) {
@@ -49,7 +49,7 @@ public class LoaiDAO {
 	public void update(LoaiDTO loai)
 	{
 		try {
-			String sql = "UPDATE loaisanpham SET TenLoaiSP= ";
+			String sql = "UPDATE phanloai SET TenLoaiSP= ";
 			sql += "'" + loai.getTenLoaiSP() + "'";
 			sql += "WHERE MaLoaiSP= ";
 			sql += "'" + loai.getMaLoaiSP() + "'";
