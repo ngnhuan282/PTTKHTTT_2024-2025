@@ -151,7 +151,7 @@ public class BanHangGUI extends JPanel {
             table.setModel(model);
             panel.add(txtSearch, BorderLayout.NORTH);
             panel.add(scrollPane, BorderLayout.CENTER);
-            dialog.add(panel);
+            dialog.getContentPane().add(panel);
 
             txtSearch.addKeyListener(new KeyAdapter() {
                 @Override
@@ -194,7 +194,7 @@ public class BanHangGUI extends JPanel {
         int startX = (400 - totalWidth) / 2; // căn giữa trong panelChiTiet
 
         btnThemVaoGio = new JButton("Thêm vào giỏ");
-        btnThemVaoGio.setBounds(startX, buttonY, buttonWidth, buttonHeight);
+        btnThemVaoGio.setBounds(15, 280, 120, 25);
         panelChiTiet.add(btnThemVaoGio);
 
         btnCapNhat = new JButton("Cập nhật");
