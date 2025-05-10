@@ -2,13 +2,17 @@ package GUI;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -43,6 +47,11 @@ public class BanHangGUI extends JPanel {
     private LoaiBUS loaiBUS = new LoaiBUS();
     private int lastSelectedRowSanPham = -1;
     private int lastSelectedRowGioHang = -1;
+    private JButton btnXemAnh;
+    private String duongDan = "/image/nikeairmax_red.png";
+    private JLabel lblAnhSanPham;
+
+
 
 
     public BanHangGUI() {
@@ -63,7 +72,7 @@ public class BanHangGUI extends JPanel {
         // ==== Chi tiết sản phẩm ====
         JPanel panelChiTiet = new JPanel(null);
         panelChiTiet.setBorder(new TitledBorder("Chi tiết sản phẩm"));
-        panelChiTiet.setBounds(820, 10, 400, 320);
+        panelChiTiet.setBounds(820, 10, 400, 430);
         add(panelChiTiet);
 
         JLabel lblLoai = new JLabel("Loại SP");
@@ -120,7 +129,21 @@ public class BanHangGUI extends JPanel {
         btnChonNV.setBounds(325, 230, 30, 25);
         panelChiTiet.add(btnChonNV);
         
+        //Anh
+        JPanel panelAnh = new JPanel();
+        panelAnh.setLayout(null);
+        panelAnh.setBounds(20, 260, 120, 120);  
+        panelAnh.setOpaque(true); 
 
+        // Tạo JLabel để hiển thị ảnh sản phẩm
+        lblAnhSanPham = new JLabel();
+        lblAnhSanPham.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        lblAnhSanPham.setOpaque(true);  // cần thiết
+        lblAnhSanPham.setBackground(Color.WHITE); 
+        lblAnhSanPham.setBounds(0, 0, 120, 120); 
+        panelAnh.add(lblAnhSanPham); 
+        
+        panelChiTiet.add(panelAnh);
 
         // Bắt sự kiện click để hiển thị danh sách nhân viên
         btnChonNV.addActionListener(e -> {
@@ -189,12 +212,12 @@ public class BanHangGUI extends JPanel {
         int buttonWidth = 110;
         int buttonHeight = 25;
         int gap = 20;
-        int buttonY = 280;
-        int totalWidth = buttonWidth * 3 + gap * 2; // = 330 + 40 = 370
-        int startX = (400 - totalWidth) / 2; // căn giữa trong panelChiTiet
+        int buttonY = 390;
+        int totalWidth = buttonWidth * 3 + gap * 2;
+        int startX = (400 - totalWidth) / 2;
 
         btnThemVaoGio = new JButton("Thêm vào giỏ");
-        btnThemVaoGio.setBounds(15, 280, 120, 25);
+        btnThemVaoGio.setBounds(startX, buttonY, buttonWidth, buttonHeight); // 👈 sửa lại theo vị trí căn giữa
         panelChiTiet.add(btnThemVaoGio);
 
         btnCapNhat = new JButton("Cập nhật");
@@ -206,7 +229,8 @@ public class BanHangGUI extends JPanel {
         btnXoaSanPham.setBounds(startX + 2 * (buttonWidth + gap), buttonY, buttonWidth, buttonHeight);
         btnXoaSanPham.setEnabled(false);
         panelChiTiet.add(btnXoaSanPham);
-
+        
+        
 
         btnXoaSanPham.addActionListener(e -> {
             int selectedRow = tableGioHang.getSelectedRow();
@@ -430,7 +454,7 @@ public class BanHangGUI extends JPanel {
         // ==== Giỏ hàng ====
         JPanel panelGioHang = new JPanel(null);
         panelGioHang.setBorder(new TitledBorder("Giỏ hàng"));
-        panelGioHang.setBounds(10, 350, 1210, 300);
+        panelGioHang.setBounds(10, 440, 1210, 300);
         add(panelGioHang);
 
         tableGioHang = new JTable();
@@ -620,6 +644,58 @@ public class BanHangGUI extends JPanel {
         cbbLoaiSP.setEditable(false); // Cực kỳ quan trọng
     }
     
+    private void hienThiAnh(String duongDan) {
+        try {
+            // Sử dụng getClass().getResource để lấy tài nguyên từ thư mục image
+            URL url = getClass().getResource(duongDan);  // Lưu ý /image/... (dấu "/" ở đầu đường dẫn)
+            
+            if (url == null) {
+                JOptionPane.showMessageDialog(null, "Không tìm thấy ảnh: " + duongDan);
+                return;
+            }
+
+            // Tạo ImageIcon từ tài nguyên
+            ImageIcon icon = new ImageIcon(url);
+            Image img = icon.getImage();
+
+            // Tính toán giữ nguyên tỷ lệ ảnh
+            int labelWidth = lblAnhSanPham.getWidth();
+            int labelHeight = lblAnhSanPham.getHeight();
+            double imgWidth = img.getWidth(null);
+            double imgHeight = img.getHeight(null);
+            double imgAspect = imgWidth / imgHeight;
+            double labelAspect = (double) labelWidth / labelHeight;
+
+            int scaledWidth, scaledHeight;
+
+            if (imgAspect > labelAspect) {
+                scaledWidth = labelWidth;
+                scaledHeight = (int) (labelWidth / imgAspect);
+            } else {
+                scaledHeight = labelHeight;
+                scaledWidth = (int) (labelHeight * imgAspect);
+            }
+
+            // Resize ảnh và gán vào JLabel
+            Image scaledImage = img.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+            lblAnhSanPham.setIcon(new ImageIcon(scaledImage));
+            lblAnhSanPham.setHorizontalAlignment(SwingConstants.CENTER);
+            lblAnhSanPham.setVerticalAlignment(SwingConstants.CENTER);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Đã có lỗi khi hiển thị ảnh: " + e.getMessage());
+        }
+    }
+
+
+
+
+
+
+
+
+
+    
     private String getTenLoaiSP(int maLoaiSP) {
         for (LoaiDTO loai : loaiBUS.getDsloai()) {
             if (loai.getMaLoaiSP() == maLoaiSP) {
@@ -697,7 +773,9 @@ public class BanHangGUI extends JPanel {
     	            txtDonGia.setText("");
     	            txtSoLuong.setText("1");
     	            cbbLoaiSP.setSelectedIndex(0);
+    	            lblAnhSanPham.setIcon(null);    	            
     	            return;
+    	            
     	        }
 
     	        lastSelectedRowSanPham = row;
@@ -717,6 +795,7 @@ public class BanHangGUI extends JPanel {
     	                break;
     	            }
     	        }
+    	        hienThiAnh(duongDan);
     	    }
     	});
 

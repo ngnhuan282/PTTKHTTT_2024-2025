@@ -35,6 +35,11 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import java.awt.Image;
+
+
 
 import BUS.LoaiBUS;
 import BUS.SanPhamBUS;
@@ -55,6 +60,10 @@ public class SanPhamGUI extends JPanel implements ActionListener {
     private SanPhamBUS spBUS = new SanPhamBUS();
     private boolean isEditMode = false;
     private JTextField txtSearch;
+    private JLabel lblAnhSanPham;
+    private JButton btnChonAnh;
+    private String duongDanAnh = ""; // để lưu đường dẫn ảnh
+
 
     public SanPhamGUI() 
     {
@@ -234,7 +243,7 @@ public class SanPhamGUI extends JPanel implements ActionListener {
         JPanel pInput = new JPanel();
         pInput.setBorder(UIManager.getBorder("TextField.border"));
         pInput.setBackground(Color.WHITE);
-        pInput.setBounds(349, 110, 497, 408);
+        pInput.setBounds(150, 110, 497, 408);
         add(pInput);
         pInput.setLayout(null);
 
@@ -397,6 +406,42 @@ public class SanPhamGUI extends JPanel implements ActionListener {
         btnEditMode.setBackground(null);
         btnEditMode.addActionListener(e -> toggleEditMode());
         pInput.add(btnEditMode);
+        
+        //Anh
+        JPanel panelAnh = new JPanel();
+        panelAnh.setLayout(null);
+        panelAnh.setBounds(670, 110, 320, 320);  // bên phải pInput
+        panelAnh.setOpaque(true); 
+       // pInput.setBounds(150, 110, 497, 408);
+
+        // Tạo JLabel để hiển thị ảnh sản phẩm
+        lblAnhSanPham = new JLabel();
+        lblAnhSanPham.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        lblAnhSanPham.setBounds(0, 0, 320, 320); // Vị trí trong panel
+        panelAnh.add(lblAnhSanPham); // Thêm JLabel vào panelAnh
+
+        // Tạo nút "Chọn ảnh"
+        btnChonAnh = new JButton("Chọn ảnh");
+        btnChonAnh.setFont(new Font("Arial", Font.PLAIN, 13));
+        btnChonAnh.setBounds(670, 440, 320, 80); // Vị trí dưới ảnh trong panel
+        btnChonAnh.setEnabled(true); // Tuỳ trạng thái
+        btnChonAnh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Chọn ảnh sản phẩm");
+                int result = fileChooser.showOpenDialog(null);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    duongDanAnh = selectedFile.getAbsolutePath();
+                    hienThiAnh(duongDanAnh);
+                }
+            }
+        });
+        add(btnChonAnh); // Thêm nút vào panelAnh
+
+        // Thêm panelAnh vào pInput
+        add(panelAnh);
 
         // Table sản phẩm chính
         tblDSSP.setBackground(Color.WHITE);
@@ -418,7 +463,44 @@ public class SanPhamGUI extends JPanel implements ActionListener {
             @Override public void mouseEntered(MouseEvent e) {}
             @Override public void mouseExited(MouseEvent e) {}
         });
+        
     }
+    
+    
+    private void hienThiAnh(String duongDan) {
+        try {
+            ImageIcon icon = new ImageIcon(duongDan);
+            Image img = icon.getImage();
+
+            // Tính toán giữ nguyên tỷ lệ
+            int labelWidth = lblAnhSanPham.getWidth();
+            int labelHeight = lblAnhSanPham.getHeight();
+            double imgWidth = img.getWidth(null);
+            double imgHeight = img.getHeight(null);
+            double imgAspect = imgWidth / imgHeight;
+            double labelAspect = (double) labelWidth / labelHeight;
+
+            int scaledWidth, scaledHeight;
+
+            if (imgAspect > labelAspect) {
+                // Ảnh rộng hơn label
+                scaledWidth = labelWidth;
+                scaledHeight = (int) (labelWidth / imgAspect);
+            } else {
+                // Ảnh cao hơn label
+                scaledHeight = labelHeight;
+                scaledWidth = (int) (labelHeight * imgAspect);
+            }
+
+            Image scaledImage = img.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH);
+            lblAnhSanPham.setIcon(new ImageIcon(scaledImage));
+            lblAnhSanPham.setHorizontalAlignment(SwingConstants.CENTER);
+            lblAnhSanPham.setVerticalAlignment(SwingConstants.CENTER);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void tblDSSPMouseClicked() 
     {
