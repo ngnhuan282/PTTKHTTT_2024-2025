@@ -1,45 +1,62 @@
 package DTO;
 
+import java.sql.Date;
+
 public class PhieuXuatDTO {
-    public String maPX;
-    public String ngayXuat;
-    public String ghiChu;
+    private String maPX;
+    private String maNV;
+    private double tongTien;
+    private Date ngayXuat;
+    private String ghiChu;
 
     public PhieuXuatDTO() {
     }
 
-    public PhieuXuatDTO(String maPX, String ngayXuat, String ghiChu) {
+    public PhieuXuatDTO(String maPX, String maNV, double tongTien, Date ngayXuat, String ghiChu) {
         this.maPX = maPX;
+        this.maNV = maNV;
+        this.tongTien = tongTien;
         this.ngayXuat = ngayXuat;
         this.ghiChu = ghiChu;
     }
 
     public String getMaPX() {
-        return this.maPX;
-    }
-
-    public String getNgayXuat() {
-        return this.ngayXuat;
-    }
-
-    public String getGhiChu() {
-        return this.ghiChu;
+        return maPX;
     }
 
     public void setMaPX(String maPX) {
         this.maPX = maPX;
     }
 
-    public void setNgayXuat(String ngayXuat) {
+    public String getMaNV() {
+        return maNV;
+    }
+
+    public void setMaNV(String maNV) {
+        this.maNV = maNV;
+    }
+
+    public double getTongTien() {
+        return tongTien;
+    }
+
+    public void setTongTien(double tongTien) {
+        this.tongTien = tongTien;
+    }
+
+    public Date getNgayXuat() {
+        return ngayXuat;
+    }
+
+    public void setNgayXuat(Date ngayXuat) {
         this.ngayXuat = ngayXuat;
+    }
+
+    public String getGhiChu() {
+        return ghiChu;
     }
 
     public void setGhiChu(String ghiChu) {
         this.ghiChu = ghiChu;
-    }
-
-    @Override
-    public String toString() {
-        return "PhieuXuatDTO [maPX=" + maPX + ", ngayXuat=" + ngayXuat + ", ghiChu=" + ghiChu + "]";
     }
 }

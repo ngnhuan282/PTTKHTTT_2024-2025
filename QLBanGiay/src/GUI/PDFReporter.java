@@ -42,10 +42,12 @@ import javax.swing.JOptionPane;
 import DAO.PhieuNhapDAO;
 import DAO.PhieuXuatDAO;
 import DAO.ChiTietPNDAO;
+import DAO.ChiTietPXDAO;
 import DAO.NhaCungCapDAO;
 import DTO.PhieuNhapDTO;
 import DTO.PhieuXuatDTO;
 import DTO.ChiTietPNDTO;
+import DTO.ChiTietPXDTO;
 import DTO.NhaCungCapDTO;
 
 public class PDFReporter {
@@ -539,7 +541,7 @@ public class PDFReporter {
 
             // Lấy thông tin phiếu xuất
             PhieuXuatDAO phieuXuatDAO = new PhieuXuatDAO();
-            ArrayList<PhieuXuatDTO> danhSachPhieuXuat = phieuXuatDAO.xuatDSPhieuXuat();
+            ArrayList<PhieuXuatDTO> danhSachPhieuXuat = phieuXuatDAO.xuatDSPX();
             PhieuXuatDTO px = null;
             for (PhieuXuatDTO phieuXuat : danhSachPhieuXuat) {
                 if (phieuXuat.getMaPX().equals(maPhieuXuat)) {
@@ -556,45 +558,96 @@ public class PDFReporter {
 
             // Thêm thông tin phiếu xuất
             Paragraph paragraph1 = new Paragraph("Mã phiếu xuất: PX-" + px.getMaPX(), fontNormal10);
-            Paragraph paragraph2 = new Paragraph("Thời gian xuất: " + px.getNgayXuat(), fontNormal10);
-            Paragraph paragraph3 = new Paragraph("Ghi chú: " + px.getGhiChu(), fontNormal10);
+
+            // Lấy thông tin nhân viên
+            NhanVienDAO nhanVienDAO = NhanVienDAO.getNhanVienDAO();
+            ArrayList<NhanVienDTO> danhSachNhanVien = nhanVienDAO.getListNhanVien();
+            NhanVienDTO nhanVien = null;
+            for (NhanVienDTO nv : danhSachNhanVien) {
+                if (nv.getMaNV().equals(px.getMaNV())) {
+                    nhanVien = nv;
+                    break;
+                }
+            }
+            if (nhanVien == null) {
+                JOptionPane.showMessageDialog(null, "Không tìm thấy nhân viên với mã " + px.getMaNV());
+                document.close();
+                writer.close();
+                return;
+            }
+            String tenNhanVien = nhanVien.getHo() + " " + nhanVien.getTen();
+            Paragraph paragraph2 = new Paragraph("Người thực hiện: " + tenNhanVien, fontNormal10);
+            paragraph2.add(new Chunk(createWhiteSpace(5)));
+            paragraph2.add(new Chunk("-"));
+            paragraph2.add(new Chunk(createWhiteSpace(5)));
+            paragraph2.add(new Chunk("Mã nhân viên: " + px.getMaNV(), fontNormal10));
+
+            Paragraph paragraph3 = new Paragraph("Thời gian xuất: " + formatDate.format(px.getNgayXuat()), fontNormal10);
+            Paragraph paragraph4 = new Paragraph("Ghi chú: " + (px.getGhiChu() != null ? px.getGhiChu() : ""), fontNormal10);
 
             document.add(paragraph1);
             document.add(paragraph2);
             document.add(paragraph3);
+            document.add(paragraph4);
             document.add(Chunk.NEWLINE);
 
-            // Thêm bảng thông tin phiếu xuất
-            PdfPTable table = new PdfPTable(3); // 3 cột: Mã PX, Ngày Xuất, Ghi Chú
+            // Thêm bảng chi tiết phiếu xuất
+            PdfPTable table = new PdfPTable(5);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{20f, 30f, 50f}); // Tỷ lệ chiều rộng cột
+            table.setWidths(new float[]{30f, 35f, 20f, 15f, 20f});
             PdfPCell cell;
 
-            // Tiêu đề bảng
-            table.addCell(new PdfPCell(new Phrase("Mã PX", fontBold15)));
-            table.addCell(new PdfPCell(new Phrase("Ngày Xuất", fontBold15)));
-            table.addCell(new PdfPCell(new Phrase("Ghi Chú", fontBold15)));
+            table.addCell(new PdfPCell(new Phrase("Tên sản phẩm", fontBold15)));
+            table.addCell(new PdfPCell(new Phrase("Thông tin", fontBold15)));
+            table.addCell(new PdfPCell(new Phrase("Giá xuất", fontBold15)));
+            table.addCell(new PdfPCell(new Phrase("Số lượng", fontBold15)));
+            table.addCell(new PdfPCell(new Phrase("Thành tiền", fontBold15)));
 
             // Thêm dòng trống
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 5; i++) {
                 cell = new PdfPCell(new Phrase(""));
                 table.addCell(cell);
             }
 
-            // Thêm thông tin phiếu xuất vào bảng
-            table.addCell(new PdfPCell(new Phrase(px.getMaPX(), fontNormal10)));
-            table.addCell(new PdfPCell(new Phrase(px.getNgayXuat(), fontNormal10)));
-            table.addCell(new PdfPCell(new Phrase(px.getGhiChu(), fontNormal10)));
+            // Thêm chi tiết sản phẩm
+            ChiTietPXDAO ctpxDAO = new ChiTietPXDAO();
+            ArrayList<ChiTietPXDTO> danhSachCTPX = ctpxDAO.xuatDSCTPX();
+            for (ChiTietPXDTO ctpx : danhSachCTPX) {
+                if (ctpx.getMaPX().equals(maPhieuXuat)) {
+                    ArrayList<SanPhamDTO> danhSachSanPham = sanPhamBus.getDssp();
+                    SanPhamDTO sanPham = null;
+                    for (SanPhamDTO sp : danhSachSanPham) {
+                        if (sp.getMaSP().equals(ctpx.getMaSP())) {
+                            sanPham = sp;
+                            break;
+                        }
+                    }
+                    if (sanPham != null) {
+                        table.addCell(new PdfPCell(new Phrase(sanPham.getTenSP(), fontNormal10)));
+                        table.addCell(new PdfPCell(new Phrase(sanPham.getMauSac() + " - " + sanPham.getKichThuoc() + " - " + sanPham.getChatLieu(), fontNormal10)));
+                        table.addCell(new PdfPCell(new Phrase(formatter.format(ctpx.getDonGia()) + "đ", fontNormal10)));
+                        table.addCell(new PdfPCell(new Phrase(String.valueOf(ctpx.getSoLuong()), fontNormal10)));
+                        table.addCell(new PdfPCell(new Phrase(formatter.format(ctpx.getThanhTien()) + "đ", fontNormal10)));
+                    }
+                }
+            }
 
             document.add(table);
             document.add(Chunk.NEWLINE);
 
-            // Thêm phần chữ ký (giữ thiết kế như writePhieuNhap nhưng bỏ "Nhân viên nhận")
+            // Thêm tổng thành tiền
+            Paragraph paraTongThanhToan = new Paragraph(new Phrase("Tổng thành tiền: " + formatter.format(px.getTongTien()) + "đ", fontBold15));
+            paraTongThanhToan.setIndentationLeft(300);
+            document.add(paraTongThanhToan);
+            document.add(Chunk.NEWLINE);
+            document.add(Chunk.NEWLINE);
+
+            // Thêm phần chữ ký
             Paragraph paragraph = new Paragraph();
             paragraph.setIndentationLeft(22);
             paragraph.add(new Chunk("Người lập phiếu", fontBoldItalic15));
             paragraph.add(new Chunk(createWhiteSpace(30)));
-            paragraph.add(new Chunk("Nhà cung cấp", fontBoldItalic15));
+            paragraph.add(new Chunk("Khách hàng", fontBoldItalic15));
 
             Paragraph sign = new Paragraph();
             sign.setIndentationLeft(23);

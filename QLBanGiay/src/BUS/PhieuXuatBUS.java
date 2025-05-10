@@ -1,9 +1,7 @@
 package BUS;
 
+import java.sql.Date;
 import java.util.ArrayList;
-
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
 
 import DAO.PhieuXuatDAO;
 import DTO.PhieuXuatDTO;
@@ -11,48 +9,50 @@ import DTO.PhieuXuatDTO;
 public class PhieuXuatBUS {
     private PhieuXuatDAO pxDAO = new PhieuXuatDAO();
     public static ArrayList<PhieuXuatDTO> listPX = new ArrayList<>();
-    private PhieuXuatDTO px = new PhieuXuatDTO();
-
-    public PhieuXuatBUS() {
-    }
-
+    private static int lastMaPX = 0;
     public ArrayList<PhieuXuatDTO> getListPX() {
-        docDSPhieuXuat();
+        docDSPX();
         return listPX;
     }
 
-    public void docDSPhieuXuat() {
+    public void docDSPX() {
         if (listPX == null)
             listPX = new ArrayList<PhieuXuatDTO>();
-        listPX = pxDAO.xuatDSPhieuXuat();
+        listPX = pxDAO.xuatDSPX();
     }
 
-    public DefaultTableModel updateTable(DefaultTableModel model) {
-        model.setRowCount(0);
-        for (PhieuXuatDTO px : listPX)
-            model.addRow(new Object[] {px.getMaPX(), px.getNgayXuat(), px.getGhiChu()});
-        return model;
+ // Tạo mã phiếu xuất mới
+    public String generateMaPX() {
+        int newMaPX = 1;
+        while (true) {
+            String maPXStr = String.valueOf(newMaPX);
+            if (!checkMaPX(maPXStr)) {
+                return maPXStr;
+            }
+            newMaPX++;
+        }
     }
 
-    public void addPhieuXuat(String maPX, String ngayXuat, String ghiChu) {
-        PhieuXuatDTO px = new PhieuXuatDTO(maPX, ngayXuat, ghiChu);
-        pxDAO.them(px);
+    public void addPX(String maPX, String maNV, double tongTien, Date ngayXuat, String ghiChu) {
+        PhieuXuatDTO px = new PhieuXuatDTO(maPX, maNV, tongTien, ngayXuat, ghiChu);
         listPX.add(px);
+        pxDAO.them(px);
     }
 
-    public void editPhieuXuat(String newMaPX, String newNgayXuat, String newGhiChu, String maPX) {
+    public void updatePX(String maPX, String maNV, double tongTien, Date ngayXuat, String ghiChu) {
         for (PhieuXuatDTO px : listPX) {
             if (px.getMaPX().equals(maPX)) {
-                px.setMaPX(newMaPX);
-                px.setNgayXuat(newNgayXuat);
-                px.setGhiChu(newGhiChu);
+                px.setMaNV(maNV);
+                px.setTongTien(tongTien);
+                px.setNgayXuat(ngayXuat);
+                px.setGhiChu(ghiChu);
                 pxDAO.sua(px, maPX);
-                return;
+                break;
             }
         }
     }
 
-    public void deletePhieuXuat(String maPX) {
+    public void deletePX(String maPX) {
         for (int i = 0; i < listPX.size(); i++) {
             if (listPX.get(i).getMaPX().equals(maPX)) {
                 pxDAO.xoa(maPX);
@@ -62,29 +62,33 @@ public class PhieuXuatBUS {
         }
     }
 
-    public ArrayList<PhieuXuatDTO> searchPhieuXuat(String tuKhoa, String tieuChi) {
-        ArrayList<PhieuXuatDTO> result = new ArrayList<PhieuXuatDTO>();
+    public ArrayList<PhieuXuatDTO> search(String tuKhoa, String tieuChi) {
+        ArrayList<PhieuXuatDTO> result = new ArrayList<>();
         for (PhieuXuatDTO px : listPX) {
             if (tieuChi.equals("Mã PX") && px.getMaPX().equalsIgnoreCase(tuKhoa))
                 result.add(px);
-            if (tieuChi.equals("Ngày Xuất") && px.getNgayXuat().equalsIgnoreCase(tuKhoa))
+            if (tieuChi.equals("Mã NV") && px.getMaNV().equalsIgnoreCase(tuKhoa))
                 result.add(px);
         }
         return result;
     }
 
-    public boolean checkEdit(String newMaPX, String maPX) {
+    public ArrayList<PhieuXuatDTO> searchByDate(Date startDate, Date endDate) {
+        ArrayList<PhieuXuatDTO> result = new ArrayList<>();
         for (PhieuXuatDTO px : listPX) {
-            if (px.getMaPX().equals(newMaPX) && (!px.getMaPX().equals(maPX)))
-                return true;
+            Date ngayXuat = px.getNgayXuat();
+            if (ngayXuat != null && !ngayXuat.before(startDate) && !ngayXuat.after(endDate)) {
+                result.add(px);
+            }
         }
-        return false;
+        return result;
     }
 
-    public boolean isDuplicatePX(String maPX) {
-        for (PhieuXuatDTO px : listPX)
+    public boolean checkMaPX(String maPX) {
+        for (PhieuXuatDTO px : listPX) {
             if (px.getMaPX().equals(maPX))
                 return true;
+        }
         return false;
     }
 }
