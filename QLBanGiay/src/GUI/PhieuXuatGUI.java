@@ -383,6 +383,11 @@ public class PhieuXuatGUI extends JPanel implements ActionListener {
             JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
+        
+        if (!maPX.matches("^\\d+$")) {
+            JOptionPane.showMessageDialog(null, "Mã phiếu xuất phải là số nguyên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         if (pxBUS.isDuplicatePX(maPX)) {
             JOptionPane.showMessageDialog(null, "Mã phiếu xuất đã tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -413,13 +418,18 @@ public class PhieuXuatGUI extends JPanel implements ActionListener {
             JOptionPane.showMessageDialog(null, "Vui lòng chọn một phiếu xuất để sửa!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
+        
         String maPX = model.getValueAt(selectedRow, 0).toString();
         String newMaPX = txtMaPX.getText().trim();
         String newGhiChu = txtGhiChu.getText().trim();
 
         if (newMaPX.isEmpty() || newGhiChu.isEmpty()) {
             JOptionPane.showMessageDialog(null, "Vui lòng nhập đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if (!newMaPX.matches("^\\d+$")) {
+            JOptionPane.showMessageDialog(null, "Mã phiếu xuất phải là số nguyên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

@@ -183,7 +183,7 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
         btnLamMoi.setBackground(Color.WHITE);
         btnLamMoi.setIcon(new ImageIcon(SanPhamGUI.class.getResource("/image/reload30.png")));
         btnLamMoi.setFont(new Font("Arial", Font.PLAIN, 13));
-        btnLamMoi.setBounds(1028, 55, 128, 30);
+        btnLamMoi.setBounds(1029, 33, 128, 30);
         btnLamMoi.setActionCommand("Reload");
         btnLamMoi.addActionListener(this);
         pHeaderMain.add(btnLamMoi);
@@ -194,81 +194,40 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
         btnSearch.setBackground(Color.WHITE);
         btnSearch.setActionCommand("Tìm kiếm");
         btnSearch.addActionListener(this);
-        btnSearch.setBounds(955, 55, 64, 30);
+        btnSearch.setBounds(956, 33, 64, 30);
         pHeaderMain.add(btnSearch);
         
-        JPanel pSearchNC = new JPanel();
-        pSearchNC.setBackground(new Color(255, 255, 255));
-        pSearchNC.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "T\u00ECm ki\u1EBFm n\u00E2ng cao", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-        pSearchNC.setBounds(492, 0, 415, 47);
-        pHeaderMain.add(pSearchNC);
-        pSearchNC.setLayout(null);
-        
-        JLabel lbSearchNC1 = new JLabel("Mã PN:");
-        lbSearchNC1.setFont(new Font("Arial", Font.PLAIN, 13));
-        lbSearchNC1.setBounds(10, 16, 60, 20);
-        pSearchNC.add(lbSearchNC1);
-        
-        txtMaPNNC = new JTextField();
-        txtMaPNNC.setBounds(74, 16, 119, 20);
-        pSearchNC.add(txtMaPNNC);
-        txtMaPNNC.setColumns(10);
-        
-        JLabel lbSearchNC2 = new JLabel("Mã NCC:");
-        lbSearchNC2.setFont(new Font("Arial", Font.PLAIN, 13));
-        lbSearchNC2.setBounds(203, 16, 60, 20);
-        pSearchNC.add(lbSearchNC2);
-        
-        txtMaNCCNC = new JTextField();
-        txtMaNCCNC.setColumns(10);
-        txtMaNCCNC.setBounds(270, 16, 119, 20);
-        pSearchNC.add(txtMaNCCNC);
-        
-        JPanel pSearch = new JPanel();
-        pSearch.setBounds(907, 0, 297, 47);
-        pHeaderMain.add(pSearch);
-        pSearch.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "T\u00ECm ki\u1EBFm", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-        pSearch.setBackground(new Color(255, 255, 255));
-        pSearch.setLayout(null);
-        
         txtSearch = new JTextField();
-        txtSearch.setBounds(99, 16, 184, 20);
-        pSearch.add(txtSearch);
+        txtSearch.setBounds(627, 18, 290, 27);
+        pHeaderMain.add(txtSearch);
         txtSearch.setColumns(10);
         cboxSearch = new JComboBox<String>(listKeyWord);
-        cboxSearch.setBounds(10, 16, 79, 21);
-        pSearch.add(cboxSearch);
+        cboxSearch.setBounds(540, 18, 77, 27);
+        pHeaderMain.add(cboxSearch);
         cboxSearch.setForeground(Color.BLACK);
         cboxSearch.setFont(new Font("Arial", Font.PLAIN, 13));
         cboxSearch.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         cboxSearch.setBackground(Color.WHITE);
         
-        JPanel pDateSearch = new JPanel();
-        pDateSearch.setBackground(new Color(255, 255, 255));
-        pDateSearch.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "T\u00ECm ki\u1EBFm theo ng\u00E0y", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-        pDateSearch.setBounds(492, 48, 415, 47);
-        pHeaderMain.add(pDateSearch);
-        pDateSearch.setLayout(null);
-        
-        dateEnd = new JDateChooser();
-        dateEnd.setBounds(270, 16, 119, 20);
-        pDateSearch.add(dateEnd);
-        dateEnd.setDateFormatString("yyyy-MM-dd");
-        
-        JLabel lblDateEnd = new JLabel("Đến ngày:");
-        lblDateEnd.setBounds(203, 16, 60, 20);
-        pDateSearch.add(lblDateEnd);
-        lblDateEnd.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lblDateStart = new JLabel("Từ ngày:");
+        lblDateStart.setBounds(557, 56, 60, 27);
+        pHeaderMain.add(lblDateStart);
+        lblDateStart.setFont(new Font("Arial", Font.PLAIN, 13));
         
         dateStart = new JDateChooser();
-        dateStart.setBounds(74, 16, 119, 20);
-        pDateSearch.add(dateStart);
+        dateStart.setBounds(627, 56, 105, 27);
+        pHeaderMain.add(dateStart);
         dateStart.setDateFormatString("yyyy-MM-dd");
         
-        JLabel lblDateStart = new JLabel("Từ ngày:");
-        lblDateStart.setBounds(10, 16, 60, 20);
-        pDateSearch.add(lblDateStart);
-        lblDateStart.setFont(new Font("Arial", Font.PLAIN, 13));
+        JLabel lblDateEnd = new JLabel("Đến ngày:");
+        lblDateEnd.setBounds(742, 56, 60, 27);
+        pHeaderMain.add(lblDateEnd);
+        lblDateEnd.setFont(new Font("Arial", Font.PLAIN, 13));
+        
+        dateEnd = new JDateChooser();
+        dateEnd.setBounds(812, 56, 105, 27);
+        pHeaderMain.add(dateEnd);
+        dateEnd.setDateFormatString("yyyy-MM-dd");
         
         
         JPanel pContent = new JPanel();
@@ -393,17 +352,6 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
         inforPanel.add(btnOpenSPList);
         btnOpenSPList.addActionListener(e->openSPList());
         
-//        btnDetails = new JButton("");
-//        btnDetails.setBorderPainted(false); 
-//        btnDetails.setFocusPainted(false);  
-//        btnDetails.setBackground(Color.WHITE);
-//        btnDetails.setIcon(new ImageIcon(SanPhamGUI.class.getResource("/image/icons8-information-20.png")));
-//        btnDetails.setBounds(330, 11, 32, 23);
-//        btnDetails.addActionListener(e->
-//        	getSelectedRowTbPhieuNhap()
-//        	);
-//        inforPanel.add(btnDetails);
-        
         
         btnEditProduct = new JButton("Sửa SP");
         btnEditProduct.setBounds(102, 271, 85, 33);
@@ -413,7 +361,6 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
         
         
         btnDeleteProduct = new JButton("Xóa SP");
-//        btnDeleteDoing.setBounds(10, 271, 114, 33);
         btnDeleteProduct.setBounds(7, 271, 85, 33);
         inforPanel.add(btnDeleteProduct);
         btnDeleteProduct.addActionListener(e->deleteProduct());
@@ -421,39 +368,13 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
         
         
         btnAddProduct = new JButton("Thêm SP");
-//        btnEditingAdd.setBounds(177, 271, 71, 33);
         btnAddProduct.setBounds (197, 271, 85, 33);
         inforPanel.add(btnAddProduct);
         btnAddProduct.addActionListener(e->addProduct());
         btnAddProduct.setVisible(false);
         
         
-        //tét//
-//        lbTongTien = new JLabel("Tổng tiền");
-//        lbTongTien.setFont(new Font("Tahoma", Font.PLAIN, 13));
-//        lbTongTien.setBounds(10, 265, 114, 25);
-//	     inforPanel.add(lbTongTien);
-//	     lbTongTien.setVisible(false);
-//	          
-//	        txtTongTien = new JTextField();
-//	        txtTongTien.setColumns(10);
-//	        txtTongTien.setBounds(124, 265, 184, 25);
-//	        inforPanel.add(txtTongTien);
-//	        txtTongTien.setVisible(false);
-//	        
-//       
-//	        lbNgayNhap = new JLabel("Số lượng");
-//	        lbNgayNhap.setFont(new Font("Tahoma", Font.PLAIN, 13));
-//	        lbNgayNhap.setBounds(10, 295, 114, 25);
-//	        inforPanel.add(lbNgayNhap);
-//	        lbNgayNhap.setVisible(false);  
-//	        
-//	        txtNgayNhap= new JTextField();
-//	        txtNgayNhap.setColumns(10);
-//	        txtNgayNhap.setBounds(124, 295, 184, 25);
-//	        inforPanel.add(txtNgayNhap);
-//	        txtNgayNhap.setVisible(false);
-        //
+       
         
         JPanel phieuNhapPanel = new JPanel();
         phieuNhapPanel.setBackground(Color.WHITE);
@@ -1067,8 +988,6 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
 	
 	public DefaultTableModel updateTablePN() {
 		txtSearch.setText("");
-		txtMaPNNC.setText(""); 
-		txtMaNCCNC.setText("");
 		dateEnd.setDate(null);
 		dateStart.setDate(null);
 		
@@ -1137,8 +1056,6 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
 	public void timKiem() {
 		String tieuChi = cboxSearch.getSelectedItem().toString();
 		String tuKhoa = txtSearch.getText().trim();
-		String maPNNC = txtMaPNNC.getText().trim();
-        String maNCCNC = txtMaNCCNC.getText().trim();
 		ArrayList<PhieuNhapDTO> result;
 		
 		java.util.Date utilStartDate = dateStart.getDate(); // java.util.Date
@@ -1146,15 +1063,13 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
         
         boolean isTimKiemCoBan = !tuKhoa.isEmpty();
         boolean isTimKiemTheoNgay = utilStartDate != null && utilEndDate != null;
-        boolean isTimKiemOR = !maPNNC.isEmpty() || !maNCCNC.isEmpty();
         
         int count = 0;
         if (isTimKiemCoBan) count++;
         if (isTimKiemTheoNgay) count++;
-        if (isTimKiemOR) count++;
         
         if (count > 1) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chỉ chọn một loại tìm kiếm: cơ bản, theo ngày, hoặc theo mã PN/NCC!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng chỉ chọn một loại tìm kiếm: cơ bản hoặc theo ngày", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
        
@@ -1185,9 +1100,6 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
 	            }
 			 result = phieuNhapBUS.searchByDate(startDate, endDate);
 		}
-		else if (isTimKiemOR) {
-            result = phieuNhapBUS.searchByMaPhieuNHOrMaNCC(maPNNC, maNCCNC);
-        }
 		else {
 			JOptionPane.showMessageDialog(this, "Vui lòng nhập thông tin để tìm kiếm !", "Lỗi", JOptionPane.ERROR_MESSAGE);
        	 	return;
@@ -1222,7 +1134,6 @@ public class PhieuNhapGUI extends JPanel  implements ActionListener{
 		txtDonGia.setEditable(true);
 		txtDonGia.setFocusable(true);
 		
-//		btnDetails.setVisible(true);
 		btnOpenNVList.setVisible(true);
 		btnOpenNCCList.setVisible(true);
 		btnOpenSPList.setVisible(true);
