@@ -383,12 +383,12 @@ public class HoaDonGUI extends JPanel implements ActionListener {
 
         // ComboBox tìm
         JComboBox<String> cboxSearch = new JComboBox<>(new String[]{"Mã hóa đơn", "Mã khách hàng", "Mã nhân viên", "Ngày lập"});
-        cboxSearch.setBounds(10, 10, 80, 22);
+        cboxSearch.setBounds(10, 10, 90, 22);
         panelButtons.add(cboxSearch);
 
         // TextField tìm
         txtSearch = new JTextField();
-        txtSearch.setBounds(95, 10, 75, 22);
+        txtSearch.setBounds(110, 10, 75, 22);
         panelButtons.add(txtSearch);
 
         // Button Tìm
