@@ -123,7 +123,7 @@ public class MainGUI extends JFrame implements ActionListener {
         btnSanPhamGUI.setFont(new Font("Verdana", Font.BOLD, 14));
         btnSanPhamGUI.setBorderPainted(false);
         btnSanPhamGUI.setBackground(Color.decode(color));
-        btnSanPhamGUI.setBounds(20, 49, 200, 35);
+        btnSanPhamGUI.setBounds(20, 193, 200, 35);
         btnSanPhamGUI.addActionListener(this);
         pNavItem.add(btnSanPhamGUI);
 
@@ -163,17 +163,19 @@ public class MainGUI extends JFrame implements ActionListener {
         btnKhachHangGUI.addActionListener(this);
         pNavItem.add(btnKhachHangGUI);
 
-        JButton btnHoaDon = new JButton("BÁN HÀNG");
-        btnHoaDon.setIcon(new ImageIcon(MainGUI.class.getResource("/image/phieuNhap.png")));
-        btnHoaDon.setOpaque(true);
-        btnHoaDon.setHorizontalAlignment(SwingConstants.LEFT);
-        btnHoaDon.setForeground(Color.WHITE);
-        btnHoaDon.setFont(new Font("Verdana", Font.BOLD, 14));
-        btnHoaDon.setBorderPainted(false);
-        btnHoaDon.setBackground(Color.decode(color));
-        btnHoaDon.setBounds(20, 193, 200, 35);
-        btnHoaDon.addActionListener(this);
-        pNavItem.add(btnHoaDon);
+        JButton btnBanHang = new JButton("BÁN HÀNG");
+        btnBanHang.setIcon(new ImageIcon(MainGUI.class.getResource("/image/phieuNhap.png")));
+        btnBanHang.setOpaque(true);
+        btnBanHang.setHorizontalAlignment(SwingConstants.LEFT);
+        btnBanHang.setForeground(Color.WHITE);
+        btnBanHang.setFont(new Font("Verdana", Font.BOLD, 14));
+        btnBanHang.setBorderPainted(false);
+        btnBanHang.setBackground(Color.decode(color));
+//        btnHoaDon.setBounds(20, 193, 200, 35);
+        btnBanHang.setBounds(20, 49, 200, 35);
+
+        btnBanHang.addActionListener(this);
+        pNavItem.add(btnBanHang);
 
         JButton btnPhieuNhap = new JButton("PHIẾU NHẬP");
         btnPhieuNhap.setIcon(new ImageIcon(MainGUI.class.getResource("/image/phieuXuat.png")));

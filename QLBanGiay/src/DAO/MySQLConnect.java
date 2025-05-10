@@ -9,7 +9,7 @@ import java.sql.Statement;
 public class MySQLConnect {
 	private String user = "root";
 	private String password = "";
-	private String url = "jdbc:mysql://localhost:3306/QuanLyBanGiay";
+	private String url = "jdbc:mysql://localhost:3306/qlbangiay";
 	private Connection conn = null;
 	private Statement st = null;
 	
