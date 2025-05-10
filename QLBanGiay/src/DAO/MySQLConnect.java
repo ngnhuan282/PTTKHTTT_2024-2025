@@ -10,6 +10,7 @@ public class MySQLConnect {
 	private String user = "root";
 	private String password = "";
 	private String url = "jdbc:mysql://localhost:3306/quanlybangiayv2";
+
 	private Connection conn = null;
 	private Statement st = null;
 	
