@@ -18,7 +18,7 @@ public class NhaCungCapDAO {
 	public ArrayList<NhaCungCapDTO> xuatDSNCC(){
 		ArrayList<NhaCungCapDTO> listNCC = new ArrayList<>();
 		try {
-			String sql = "SELECT * FROM nhacungcap";
+			String sql = "SELECT * FROM nhacc";
 			ResultSet rs = mysql.executeQuery(sql);
 			while(rs.next()) {
 				NhaCungCapDTO ncc = new NhaCungCapDTO();
@@ -43,7 +43,7 @@ public class NhaCungCapDAO {
 			sql += "'" +ncc.getTenNCC()+"',";
 			sql += "'" +ncc.getDiaChi()+"',";
 			sql += "'" +ncc.getSDT()+"')";
-//			System.out.println("SQL INSERT: " + sql); 
+			System.out.println("SQL INSERT: " + sql); 
 			mysql.executeUpdate(sql);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -53,13 +53,13 @@ public class NhaCungCapDAO {
 	
 	public void sua(NhaCungCapDTO ncc,String maNCC) {
 		try {
-			String sql = "UPDATE nhacungcap SET ";
+			String sql = "UPDATE nhacc SET ";
 			sql += "MaNCC= '"+ncc.getMaNCC()+"', ";
 			sql += "TenNCC= '"+ncc.getTenNCC()+"', ";
 			sql += "DiaChi= '"+ncc.getDiaChi()+"', ";
 			sql += "SDT= '"+ncc.getSDT()+"'";
 			sql += " WHERE MaNCC='"+maNCC+"'";
-//			System.out.println("SQL UPDATE: " + sql); 
+			System.out.println("SQL UPDATE: " + sql); 
 			mysql.executeUpdate(sql);			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -69,7 +69,8 @@ public class NhaCungCapDAO {
 	
 	public void xoa(String maNCC) {
 		try {
-			String sql = "DELETE FROM nhacungcap WHERE MaNCC='"+maNCC+"'";
+			String sql = "DELETE FROM nhacc WHERE MaNCC='"+maNCC+"'";
+			System.out.println("SQL deleting: " + sql); 
 			mysql.executeUpdate(sql);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -40,9 +40,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import DAO.PhieuNhapDAO;
+import DAO.PhieuXuatDAO;
 import DAO.ChiTietPNDAO;
 import DAO.NhaCungCapDAO;
 import DTO.PhieuNhapDTO;
+import DTO.PhieuXuatDTO;
 import DTO.ChiTietPNDTO;
 import DTO.NhaCungCapDTO;
 
@@ -490,6 +492,114 @@ public class PDFReporter {
             sign.add(new Chunk(createWhiteSpace(20)));
             sign.add(new Chunk("(Ký và ghi rõ họ tên)", fontNormal10));
             sign.add(new Chunk(createWhiteSpace(28)));
+            sign.add(new Chunk("(Ký và ghi rõ họ tên)", fontNormal10));
+            document.add(paragraph);
+            document.add(sign);
+
+            document.close();
+            writer.close();
+            openFile(url);
+
+        } catch (DocumentException | FileNotFoundException ex) {
+            JOptionPane.showMessageDialog(null, "Lỗi khi ghi file " + url);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Lỗi không xác định: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+    
+    public void writePhieuXuat(String maPhieuXuat) {
+        String url = "";
+        try {
+            fd.setTitle("In phiếu xuất hàng");
+            fd.setLocationRelativeTo(null);
+            url = getFile(maPhieuXuat);
+            if (url == null || url.equals("nullnull")) {
+                return;
+            }
+            url = url + ".pdf";
+            file = new FileOutputStream(url);
+            document = new Document();
+            PdfWriter writer = PdfWriter.getInstance(document, file);
+            document.open();
+
+            // Thêm tiêu đề công ty và thời gian
+            Paragraph company = new Paragraph("Cửa hàng bán giày LOOPY", fontBold15);
+            company.add(new Chunk(createWhiteSpace(20)));
+            Date today = new Date(System.currentTimeMillis());
+            company.add(new Chunk("Thời gian in phiếu: " + formatDate.format(today), fontNormal10));
+            company.setAlignment(Element.ALIGN_LEFT);
+            document.add(company);
+            document.add(Chunk.NEWLINE);
+
+            // Thêm tiêu đề phiếu xuất
+            Paragraph header = new Paragraph("THÔNG TIN PHIẾU XUẤT HÀNG", fontBold25);
+            header.setAlignment(Element.ALIGN_CENTER);
+            document.add(header);
+
+            // Lấy thông tin phiếu xuất
+            PhieuXuatDAO phieuXuatDAO = new PhieuXuatDAO();
+            ArrayList<PhieuXuatDTO> danhSachPhieuXuat = phieuXuatDAO.xuatDSPhieuXuat();
+            PhieuXuatDTO px = null;
+            for (PhieuXuatDTO phieuXuat : danhSachPhieuXuat) {
+                if (phieuXuat.getMaPX().equals(maPhieuXuat)) {
+                    px = phieuXuat;
+                    break;
+                }
+            }
+            if (px == null) {
+                JOptionPane.showMessageDialog(null, "Không tìm thấy phiếu xuất với mã " + maPhieuXuat);
+                document.close();
+                writer.close();
+                return;
+            }
+
+            // Thêm thông tin phiếu xuất
+            Paragraph paragraph1 = new Paragraph("Mã phiếu xuất: PX-" + px.getMaPX(), fontNormal10);
+            Paragraph paragraph2 = new Paragraph("Thời gian xuất: " + px.getNgayXuat(), fontNormal10);
+            Paragraph paragraph3 = new Paragraph("Ghi chú: " + px.getGhiChu(), fontNormal10);
+
+            document.add(paragraph1);
+            document.add(paragraph2);
+            document.add(paragraph3);
+            document.add(Chunk.NEWLINE);
+
+            // Thêm bảng thông tin phiếu xuất
+            PdfPTable table = new PdfPTable(3); // 3 cột: Mã PX, Ngày Xuất, Ghi Chú
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{20f, 30f, 50f}); // Tỷ lệ chiều rộng cột
+            PdfPCell cell;
+
+            // Tiêu đề bảng
+            table.addCell(new PdfPCell(new Phrase("Mã PX", fontBold15)));
+            table.addCell(new PdfPCell(new Phrase("Ngày Xuất", fontBold15)));
+            table.addCell(new PdfPCell(new Phrase("Ghi Chú", fontBold15)));
+
+            // Thêm dòng trống
+            for (int i = 0; i < 3; i++) {
+                cell = new PdfPCell(new Phrase(""));
+                table.addCell(cell);
+            }
+
+            // Thêm thông tin phiếu xuất vào bảng
+            table.addCell(new PdfPCell(new Phrase(px.getMaPX(), fontNormal10)));
+            table.addCell(new PdfPCell(new Phrase(px.getNgayXuat(), fontNormal10)));
+            table.addCell(new PdfPCell(new Phrase(px.getGhiChu(), fontNormal10)));
+
+            document.add(table);
+            document.add(Chunk.NEWLINE);
+
+            // Thêm phần chữ ký (giữ thiết kế như writePhieuNhap nhưng bỏ "Nhân viên nhận")
+            Paragraph paragraph = new Paragraph();
+            paragraph.setIndentationLeft(22);
+            paragraph.add(new Chunk("Người lập phiếu", fontBoldItalic15));
+            paragraph.add(new Chunk(createWhiteSpace(30)));
+            paragraph.add(new Chunk("Nhà cung cấp", fontBoldItalic15));
+
+            Paragraph sign = new Paragraph();
+            sign.setIndentationLeft(23);
+            sign.add(new Chunk("(Ký và ghi rõ họ tên)", fontNormal10));
+            sign.add(new Chunk(createWhiteSpace(30)));
             sign.add(new Chunk("(Ký và ghi rõ họ tên)", fontNormal10));
             document.add(paragraph);
             document.add(sign);
