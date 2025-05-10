@@ -728,21 +728,27 @@ public class PhieuXuatGUI extends JPanel implements ActionListener {
             return;
         }
 
-     // Kiểm tra số lượng tồn kho trước khi xuất
+        // Kiểm tra số lượng tồn kho trước khi xuất
+        ArrayList<ChiTietPXDTO> oldListCTPX = update ? chiTietPXBUS.getChiTietTheoMaPhieu(maPX) : new ArrayList<>();
         for (ChiTietPXDTO ctpx : listTemp) {
             SanPhamDTO sp = sanPhamBUS.getSanPhamByMaSP(ctpx.getMaSP());
-            if (sp == null) {
-                JOptionPane.showMessageDialog(this, "Sản phẩm " + ctpx.getMaSP() + " không tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
             int soLuongTon = sp.getSoLuong();
+            // Nếu sửa phiếu xuất, cộng lại số lượng cũ để tính tồn kho thực tế
+            if (update) {
+                for (ChiTietPXDTO oldCTPX : oldListCTPX) {
+                    if (oldCTPX.getMaSP().equals(ctpx.getMaSP())) {
+                        soLuongTon += oldCTPX.getSoLuong();
+                        break;
+                    }
+                }
+            }
             if (soLuongTon < ctpx.getSoLuong()) {
                 JOptionPane.showMessageDialog(this, "Sản phẩm " + ctpx.getMaSP() + " không đủ số lượng tồn kho! Tồn kho: " + soLuongTon + ", Yêu cầu: " + ctpx.getSoLuong(), "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
 
-        // Tính tổng tiền
+       
         double tongTien = 0;
         for (ChiTietPXDTO ctpx : listTemp) {
             tongTien += ctpx.getThanhTien();
@@ -751,48 +757,57 @@ public class PhieuXuatGUI extends JPanel implements ActionListener {
         LocalDate now = LocalDate.now();
         Date ngayXuat = Date.valueOf(now);
 
-        if (update) {
-            // Khôi phục số lượng cũ
-            ArrayList<ChiTietPXDTO> oldListCTPX = chiTietPXBUS.getChiTietTheoMaPhieu(maPX);
-            for (ChiTietPXDTO oldCTPX : oldListCTPX) {
-                sanPhamBUS.updateSoLuongPX(oldCTPX.getMaSP(), oldCTPX.getSoLuong());
+        try {
+            if (update) {
+                
+                for (ChiTietPXDTO oldCTPX : oldListCTPX) {
+                    sanPhamBUS.updateSoLuongPX(oldCTPX.getMaSP(), oldCTPX.getSoLuong());
+                }
+             
+                for (ChiTietPXDTO newCTPX : listTemp) {
+                    sanPhamBUS.updateSoLuongPX(newCTPX.getMaSP(), -newCTPX.getSoLuong());
+                }
+
+               
+                phieuXuatBUS.updatePX(maPX, NV, tongTien, ngayXuat, ghiChu);
+                chiTietPXBUS.updateCTPX(maPX, listTemp);
+
+              
+                int selectedRow = tbPhieuXuat.getSelectedRow();
+                if (selectedRow != -1) {
+                    modelPhieuXuat.setValueAt(NV, selectedRow, 1);
+                    modelPhieuXuat.setValueAt(tongTien, selectedRow, 2);
+                    modelPhieuXuat.setValueAt(ngayXuat, selectedRow, 3);
+                    modelPhieuXuat.setValueAt(ghiChu, selectedRow, 4);
+                }
+
+                JOptionPane.showMessageDialog(this, "Sửa phiếu xuất thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+              
+                if (phieuXuatBUS.checkMaPX(maPX)) {
+                    JOptionPane.showMessageDialog(this, "Mã phiếu xuất " + maPX + " đã tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    txtMaPX.requestFocus();
+                    return;
+                }
+                phieuXuatBUS.addPX(maPX, NV, tongTien, ngayXuat, ghiChu);
+                for (ChiTietPXDTO ctpx : listTemp) {
+                    chiTietPXBUS.addCTPX(maPX, ctpx.getMaSP(), ctpx.getSoLuong(), ctpx.getDonGia(), ctpx.getThanhTien());
+                }
+               
+                for (ChiTietPXDTO ctpx : listTemp) {
+                    sanPhamBUS.updateSoLuongPX(ctpx.getMaSP(), -ctpx.getSoLuong());
+                }
+
+                modelPhieuXuat.addRow(new Object[]{maPX, NV, tongTien, ngayXuat, ghiChu});
+
+                JOptionPane.showMessageDialog(this, "Thêm phiếu xuất thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             }
-            // Trừ số lượng mới
-            for (ChiTietPXDTO newCTPX : listTemp) {
-                sanPhamBUS.updateSoLuongPX(newCTPX.getMaSP(), -newCTPX.getSoLuong());
-            }
 
-            // Cập nhật phiếu xuất và chi tiết
-            phieuXuatBUS.updatePX(maPX, NV, tongTien, ngayXuat, ghiChu);
-            chiTietPXBUS.updateCTPX(maPX, listTemp);
-
-            // Cập nhật bảng phiếu xuất
-            int selectedRow = tbPhieuXuat.getSelectedRow();
-            if (selectedRow != -1) {
-                modelPhieuXuat.setValueAt(NV, selectedRow, 1);
-                modelPhieuXuat.setValueAt(tongTien, selectedRow, 2);
-                modelPhieuXuat.setValueAt(ngayXuat, selectedRow, 3);
-                modelPhieuXuat.setValueAt(ghiChu, selectedRow, 4);
-            }
-
-            JOptionPane.showMessageDialog(this, "Sửa phiếu xuất thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            // Thêm phiếu xuất mới
-            phieuXuatBUS.addPX(maPX, NV, tongTien, ngayXuat, ghiChu);
-            for (ChiTietPXDTO ctpx : listTemp) {
-                chiTietPXBUS.addCTPX(maPX, ctpx.getMaSP(), ctpx.getSoLuong(), ctpx.getDonGia(), ctpx.getThanhTien());
-            }
-            // Trừ số lượng sản phẩm
-            for (ChiTietPXDTO ctpx : listTemp) {
-                sanPhamBUS.updateSoLuongPX(ctpx.getMaSP(), -ctpx.getSoLuong());
-            }
-
-            modelPhieuXuat.addRow(new Object[]{maPX, NV, tongTien, ngayXuat, ghiChu});
-
-            JOptionPane.showMessageDialog(this, "Thêm phiếu xuất thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-        }
-
-        clear();
+            clear();
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }	
     }
 
     public void deletePX() {
