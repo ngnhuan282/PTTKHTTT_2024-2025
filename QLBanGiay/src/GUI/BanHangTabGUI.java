@@ -14,8 +14,15 @@ public class BanHangTabGUI extends JPanel {
         tabbedPane.addTab("Bán hàng", banHangPanel);
 
         // Tab 2: Hóa đơn
-        JPanel danhSachHDPanel = new HoaDonGUI(); // Chỉ còn chức năng xem/tìm hóa đơn
+        HoaDonGUI  danhSachHDPanel = new HoaDonGUI(); // Chỉ còn chức năng xem/tìm hóa đơn
         tabbedPane.addTab("Hóa đơn", danhSachHDPanel);
+        tabbedPane.addChangeListener(e -> {
+            int selectedIndex = tabbedPane.getSelectedIndex();
+            String selectedTitle = tabbedPane.getTitleAt(selectedIndex);
+            if (selectedTitle.equals("Hóa đơn")) {
+                ((HoaDonGUI) danhSachHDPanel).refreshData(); // Gọi làm mới
+            }
+        });
 
         add(tabbedPane, BorderLayout.CENTER);
     }

@@ -1725,4 +1725,14 @@ public class HoaDonGUI extends JPanel implements ActionListener {
             e.printStackTrace();
         }
     }
+    public void refreshData() {
+        try {
+            hoaDonBUS.docDSHD();
+            openBillTable();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi làm mới dữ liệu hóa đơn: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
+    }
+
 }

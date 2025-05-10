@@ -42,6 +42,14 @@ public class ThongKeGUI extends JPanel {
         
         ThongKeNhaCungCapGUI pNCC = new ThongKeNhaCungCapGUI();
         tabbedPane.addTab("Nhà cung cấp", pNCC);
+        tabbedPane.addChangeListener(e -> {
+            int index = tabbedPane.getSelectedIndex();
+            String title = tabbedPane.getTitleAt(index);
+            if (title.equals("Hóa đơn")) {
+                pHoaDon.refreshThongKe();
+            }
+        });
+
 
         // --- Thiết kế Tab Tổng quan ---
         // Header: TỔNG QUAN

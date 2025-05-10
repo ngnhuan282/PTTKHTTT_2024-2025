@@ -569,6 +569,7 @@ public class BanHangGUI extends JPanel {
                     btnCapNhat.setEnabled(false);
                     btnXoaSanPham.setEnabled(false);
                     
+                    txtNhanVien.setText("");
                     // 👉 Thêm dòng dưới để cập nhật lại bảng sản phẩm
                     sanPhamBUS.docDSSP();     // đọc lại dữ liệu từ DB
                     hienThiSanPham();         // cập nhật lại bảng hiển thị

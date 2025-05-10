@@ -16,7 +16,7 @@ public class TaiKhoanDAO {
 	{	
 		TaiKhoanDTO taiKhoan = null;
 		try {
-			String sql = "SELECT * FROM TaiKhoan WHERE tenDangNhap = ";
+			String sql = "SELECT * FROM TaiKhoan WHERE TenDangNhap = ";
 			sql += "'" + tenDangNhap + "'";
 			sql += "AND matKhau= '" + matKhau + "'";
 			ResultSet rs = mysql.executeQuery(sql);

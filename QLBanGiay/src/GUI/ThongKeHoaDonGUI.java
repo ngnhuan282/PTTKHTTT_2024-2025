@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableModel;
 
@@ -37,6 +37,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import com.toedter.calendar.JDateChooser;
 
 import BUS.ThongKeHoaDonBUS;
 import DAO.ThongKeDAO;
@@ -49,7 +51,7 @@ public class ThongKeHoaDonGUI extends JPanel {
     private ThongKeDAO thongKeDAO;
     private ThongKeHoaDonBUS thongKeBUS;
     private JLabel lblTongSoHoaDon, lblTongGiaTri, lblSoLuongSanPham;
-    private JTextField txtTuNgay, txtDenNgay;
+    private JDateChooser dateChooserTuNgay, dateChooserDenNgay; // Replaced JTextField with JDateChooser
     private JComboBox<String> cboxNam, cboxLoaiThongKe;
     private DefaultTableModel tableModel;
     private JTable table;
@@ -111,18 +113,20 @@ public class ThongKeHoaDonGUI extends JPanel {
         lblTuNgay.setFont(new Font("Arial", Font.PLAIN, 14));
         pFilter.add(lblTuNgay);
 
-        txtTuNgay = new JTextField();
-        txtTuNgay.setBounds(100, 15, 120, 30);
-        pFilter.add(txtTuNgay);
+        dateChooserTuNgay = new JDateChooser();
+        dateChooserTuNgay.setBounds(100, 15, 120, 30);
+        dateChooserTuNgay.setDateFormatString("yyyy-MM-dd");
+        pFilter.add(dateChooserTuNgay);
 
         JLabel lblDenNgay = new JLabel("Đến ngày:");
         lblDenNgay.setBounds(240, 15, 80, 30);
         lblDenNgay.setFont(new Font("Arial", Font.PLAIN, 14));
         pFilter.add(lblDenNgay);
 
-        txtDenNgay = new JTextField();
-        txtDenNgay.setBounds(320, 15, 120, 30);
-        pFilter.add(txtDenNgay);
+        dateChooserDenNgay = new JDateChooser();
+        dateChooserDenNgay.setBounds(320, 15, 120, 30);
+        dateChooserDenNgay.setDateFormatString("yyyy-MM-dd");
+        pFilter.add(dateChooserDenNgay);
 
         // Lọc Theo năm
         JLabel lblTheoNam = new JLabel("Chọn năm:");
@@ -130,35 +134,36 @@ public class ThongKeHoaDonGUI extends JPanel {
         lblTheoNam.setFont(new Font("Arial", Font.PLAIN, 14));
         pFilter.add(lblTheoNam);
 
-        String[] years = {"2025", "2024", "2023", "2022", "2021"};
+        String[] years = {"Chọn năm", "2025", "2024", "2023", "2022", "2021"}; // Added "Chọn năm" as default
         cboxNam = new JComboBox<>(years);
-        cboxNam.setBounds(540, 15, 80, 30);
+        cboxNam.setBounds(540, 15, 100, 30); // Slightly wider to accommodate text
+        cboxNam.setSelectedIndex(0); // Default to "Chọn năm"
         pFilter.add(cboxNam);
 
         // Chọn loại thống kê
         JLabel lblLoaiThongKe = new JLabel("Loại thống kê:");
-        lblLoaiThongKe.setBounds(640, 15, 100, 30);
+        lblLoaiThongKe.setBounds(660, 15, 100, 30);
         lblLoaiThongKe.setFont(new Font("Arial", Font.PLAIN, 14));
         pFilter.add(lblLoaiThongKe);
 
         String[] loaiThongKe = {"Theo ngày", "Theo tháng", "Theo khách hàng", "Theo nhân viên", "Theo sản phẩm"};
         cboxLoaiThongKe = new JComboBox<>(loaiThongKe);
-        cboxLoaiThongKe.setSelectedIndex(1); // Mặc định chọn "Theo tháng" (index 1)
-        cboxLoaiThongKe.setBounds(740, 15, 150, 30);
+        cboxLoaiThongKe.setSelectedIndex(1); // Mặc định chọn "Theo tháng"
+        cboxLoaiThongKe.setBounds(760, 15, 150, 30);
         pFilter.add(cboxLoaiThongKe);
 
         JButton btnFilter = new JButton("Lọc");
         btnFilter.setBounds(960, 15, 105, 30);
         btnFilter.setFont(new Font("Arial", Font.PLAIN, 14));
-        btnFilter.setBackground(new Color(33, 150, 243)); // Màu xanh lá cây #1E7E34
-        btnFilter.setForeground(Color.WHITE); // Chữ màu trắng
+        btnFilter.setBackground(new Color(33, 150, 243));
+        btnFilter.setForeground(Color.WHITE);
         pFilter.add(btnFilter);
 
         JButton btnXuatExcel = new JButton("Xuất Excel");
         btnXuatExcel.setBounds(1068, 15, 105, 30);
         btnXuatExcel.setFont(new Font("Arial", Font.PLAIN, 14));
-        btnXuatExcel.setBackground(new Color(33, 150, 243)); // Màu xanh lá cây #1E7E34
-        btnXuatExcel.setForeground(Color.WHITE); // Chữ màu trắng
+        btnXuatExcel.setBackground(new Color(33, 150, 243));
+        btnXuatExcel.setForeground(Color.WHITE);
         pFilter.add(btnXuatExcel);
 
         // Panel cho biểu đồ cột
@@ -204,61 +209,66 @@ public class ThongKeHoaDonGUI extends JPanel {
         lblTongGiaTri.setText("Tổng doanh thu: " + formatter.format(tongDoanhThu) + "đ");
         lblSoLuongSanPham.setText("Số lượng sản phẩm: " + soLuongSanPham);
 
-        // Mặc định hiển thị thống kê theo tháng của năm đầu tiên
-        String selectedYear = cboxNam.getItemAt(0).toString(); // Lấy năm đầu tiên (2025)
-        int year = Integer.parseInt(selectedYear);
-        loadThongKeTheoThang(year);
-        updateChart(null, null, year, "Theo tháng");
+        // Mặc định hiển thị thống kê theo tháng của năm hiện tại
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        cboxNam.setSelectedItem(String.valueOf(currentYear)); // Set to current year
+        loadThongKeTheoThang(currentYear);
+        updateChart(null, null, currentYear, "Theo tháng");
     }
-
+    
     private void filterStatistics() {
-        String tuNgay = txtTuNgay.getText().trim();
-        String denNgay = txtDenNgay.getText().trim();
+        Date tuNgay = dateChooserTuNgay.getDate();
+        Date denNgay = dateChooserDenNgay.getDate();
         String selectedYear = cboxNam.getSelectedItem().toString();
         String loaiThongKe = cboxLoaiThongKe.getSelectedItem().toString();
 
-        // Kiểm tra nếu cả hai trường ngày đều rỗng và loại thống kê yêu cầu ngày
-        if ((tuNgay.isEmpty() && denNgay.isEmpty()) && loaiThongKe.equals("Theo ngày")) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập cả 'Từ ngày' và 'Đến ngày' để lọc theo ngày!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+        // Validate year selection
+        if (selectedYear.equals("Chọn năm") && !loaiThongKe.equals("Theo ngày")) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn năm để lọc!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // Validate và ghép năm từ cboxNam với định dạng MM-dd
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        dateFormat.setLenient(false);
+        // Validate dates for "Theo ngày"
         java.sql.Date startDate = null, endDate = null;
-
-        try {
-            if (!tuNgay.isEmpty()) {
-                String fullTuNgay = selectedYear + "-" + tuNgay; // Ghép năm với MM-dd
-                Date parsedDate = dateFormat.parse(fullTuNgay);
-                startDate = new java.sql.Date(parsedDate.getTime());
+        if (loaiThongKe.equals("Theo ngày")) {
+            if (tuNgay == null || denNgay == null) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn cả 'Từ ngày' và 'Đến ngày' để lọc theo ngày!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
             }
-            if (!denNgay.isEmpty()) {
-                String fullDenNgay = selectedYear + "-" + denNgay; // Ghép năm với MM-dd
-                Date parsedDate = dateFormat.parse(fullDenNgay);
-                endDate = new java.sql.Date(parsedDate.getTime());
-            }
-            if (startDate != null && endDate != null && startDate.after(endDate)) {
+            if (tuNgay.after(denNgay)) {
                 JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được sau ngày kết thúc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Định dạng ngày không hợp lệ (MM-dd) hoặc dữ liệu không đúng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
+            startDate = new java.sql.Date(tuNgay.getTime());
+            endDate = new java.sql.Date(denNgay.getTime());
         }
 
-        // Tạo biến tạm thời để sử dụng trong stream
-        java.sql.Date finalStartDate = startDate;
-        java.sql.Date finalEndDate = endDate;
-
-        // Cập nhật tổng số hóa đơn, tổng doanh thu, số lượng sản phẩm
+        // Filter danhSachHoaDon
         List<HoaDonDTO> danhSachHoaDon = thongKeBUS.getDanhSachHoaDon();
-        List<HoaDonDTO> filteredHoaDonList = danhSachHoaDon.stream()
-                .filter(hd -> (finalStartDate == null || !hd.getNgayLap().before(finalStartDate)))
-                .filter(hd -> (finalEndDate == null || !hd.getNgayLap().after(finalEndDate)))
-                .collect(Collectors.toList());
+        final List<HoaDonDTO> filteredHoaDonList; // Declare as final to ensure it's effectively final
 
+        if (loaiThongKe.equals("Theo ngày")) {
+            java.sql.Date finalStartDate = startDate;
+            java.sql.Date finalEndDate = endDate;
+            filteredHoaDonList = danhSachHoaDon.stream()
+                    .filter(hd -> !hd.getNgayLap().before(finalStartDate) && !hd.getNgayLap().after(finalEndDate))
+                    .collect(Collectors.toList());
+        } else if (!selectedYear.equals("Chọn năm")) {
+            try {
+                int year = Integer.parseInt(selectedYear);
+                filteredHoaDonList = danhSachHoaDon.stream()
+                        .filter(hd -> hd.getNgayLap().toLocalDate().getYear() == year)
+                        .collect(Collectors.toList());
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Năm không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } else {
+            // For cases where no year filtering is needed (e.g., Theo khách hàng, nhân viên, sản phẩm)
+            filteredHoaDonList = new ArrayList<>(danhSachHoaDon);
+        }
+
+        // Calculate statistics
         int tongSoHoaDon = filteredHoaDonList.size();
         double tongDoanhThu = filteredHoaDonList.stream().mapToDouble(HoaDonDTO::getTongTien).sum();
         int soLuongSanPham = thongKeBUS.getDanhSachChiTietHoaDon().stream()
@@ -273,11 +283,13 @@ public class ThongKeHoaDonGUI extends JPanel {
         // Cập nhật bảng theo loại thống kê
         tableModel.setRowCount(0);
         int year = 0;
-        try {
-            year = Integer.parseInt(selectedYear);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Năm không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
+        if (!selectedYear.equals("Chọn năm")) {
+            try {
+                year = Integer.parseInt(selectedYear);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Năm không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
         }
 
         switch (loaiThongKe) {
@@ -285,13 +297,15 @@ public class ThongKeHoaDonGUI extends JPanel {
                 if (startDate != null && endDate != null) {
                     loadThongKeTheoNgay(startDate, endDate);
                     updateChart(startDate, endDate, null, loaiThongKe);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Vui lòng nhập cả ngày bắt đầu và ngày kết thúc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 }
                 break;
             case "Theo tháng":
-                loadThongKeTheoThang(year);
-                updateChart(null, null, year, loaiThongKe);
+                if (!selectedYear.equals("Chọn năm")) {
+                    loadThongKeTheoThang(year);
+                    updateChart(null, null, year, loaiThongKe);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Vui lòng chọn năm để lọc theo tháng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
                 break;
             case "Theo khách hàng":
                 loadThongKeTheoKhachHang();
@@ -306,7 +320,109 @@ public class ThongKeHoaDonGUI extends JPanel {
                 updateChart(null, null, null, loaiThongKe);
                 break;
         }
+        dateChooserTuNgay.setDate(null);
+        dateChooserDenNgay.setDate(null);
     }
+
+//    private void filterStatistics() {
+//        Date tuNgay = dateChooserTuNgay.getDate();
+//        Date denNgay = dateChooserDenNgay.getDate();
+//        String selectedYear = cboxNam.getSelectedItem().toString();
+//        String loaiThongKe = cboxLoaiThongKe.getSelectedItem().toString();
+//
+//        // Validate year selection
+//        if (selectedYear.equals("Chọn năm") && !loaiThongKe.equals("Theo ngày")) {
+//            JOptionPane.showMessageDialog(this, "Vui lòng chọn năm để lọc!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+//            return;
+//        }
+//
+//        // Validate dates for "Theo ngày"
+//        java.sql.Date startDate = null, endDate = null;
+//        if (loaiThongKe.equals("Theo ngày")) {
+//            if (tuNgay == null || denNgay == null) {
+//                JOptionPane.showMessageDialog(this, "Vui lòng chọn cả 'Từ ngày' và 'Đến ngày' để lọc theo ngày!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+//                return;
+//            }
+//            if (tuNgay.after(denNgay)) {
+//                JOptionPane.showMessageDialog(this, "Ngày bắt đầu không được sau ngày kết thúc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//            startDate = new java.sql.Date(tuNgay.getTime());
+//            endDate = new java.sql.Date(denNgay.getTime());
+//        }
+//
+//        // Cập nhật tổng số hóa đơn, tổng doanh thu, số lượng sản phẩm
+//        List<HoaDonDTO> danhSachHoaDon = thongKeBUS.getDanhSachHoaDon();
+//        List<HoaDonDTO> filteredHoaDonList = danhSachHoaDon;
+//        
+//        if (loaiThongKe.equals("Theo ngày")) {
+//            filteredHoaDonList = danhSachHoaDon.stream()
+//                    .filter(hd -> !hd.getNgayLap().before(startDate) && !hd.getNgayLap().after(endDate))
+//                    .collect(Collectors.toList());
+//        } else if (!selectedYear.equals("Chọn năm")) {
+//            try {
+//                int year = Integer.parseInt(selectedYear);
+//                filteredHoaDonList = danhSachHoaDon.stream()
+//                        .filter(hd -> hd.getNgayLap().toLocalDate().getYear() == year)
+//                        .collect(Collectors.toList());
+//            } catch (NumberFormatException e) {
+//                JOptionPane.showMessageDialog(this, "Năm không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//        }
+//
+//        int tongSoHoaDon = filteredHoaDonList.size();
+//        double tongDoanhThu = filteredHoaDonList.stream().mapToDouble(HoaDonDTO::getTongTien).sum();
+//        int soLuongSanPham = thongKeBUS.getDanhSachChiTietHoaDon().stream()
+//                .filter(ct -> filteredHoaDonList.stream().anyMatch(hd -> hd.getMaHD().equals(ct.getMaHD())))
+//                .mapToInt(ChiTietHDDTO::getSoLuong)
+//                .sum();
+//
+//        lblTongSoHoaDon.setText("Tổng số hóa đơn: " + tongSoHoaDon);
+//        lblTongGiaTri.setText("Tổng doanh thu: " + formatter.format(tongDoanhThu) + "đ");
+//        lblSoLuongSanPham.setText("Số lượng sản phẩm: " + soLuongSanPham);
+//
+//        // Cập nhật bảng theo loại thống kê
+//        tableModel.setRowCount(0);
+//        int year = 0;
+//        if (!selectedYear.equals("Chọn năm")) {
+//            try {
+//                year = Integer.parseInt(selectedYear);
+//            } catch (NumberFormatException e) {
+//                JOptionPane.showMessageDialog(this, "Năm không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+//        }
+//
+//        switch (loaiThongKe) {
+//            case "Theo ngày":
+//                if (startDate != null && endDate != null) {
+//                    loadThongKeTheoNgay(startDate, endDate);
+//                    updateChart(startDate, endDate, null, loaiThongKe);
+//                }
+//                break;
+//            case "Theo tháng":
+//                if (!selectedYear.equals("Chọn năm")) {
+//                    loadThongKeTheoThang(year);
+//                    updateChart(null, null, year, loaiThongKe);
+//                } else {
+//                    JOptionPane.showMessageDialog(this, "Vui lòng chọn năm để lọc theo tháng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                }
+//                break;
+//            case "Theo khách hàng":
+//                loadThongKeTheoKhachHang();
+//                updateChart(null, null, null, loaiThongKe);
+//                break;
+//            case "Theo nhân viên":
+//                loadThongKeTheoNhanVien();
+//                updateChart(null, null, null, loaiThongKe);
+//                break;
+//            case "Theo sản phẩm":
+//                loadThongKeTheoSanPham();
+//                updateChart(null, null, null, loaiThongKe);
+//                break;
+//        }
+//    }
 
     private void loadThongKeTheoNgay(java.sql.Date tuNgay, java.sql.Date denNgay) {
         ArrayList<ThongKeDoanhThuDTO> thongKeList = thongKeDAO.thongKeDoanhThuTuNgayDenNgay(tuNgay, denNgay);
@@ -534,7 +650,7 @@ public class ThongKeHoaDonGUI extends JPanel {
         pChart.repaint();
     }
 
-    // Lớp CustomChartPanel để vẽ biểu đồ cột
+    // Lớp CustomChartPanel để vẽ biểu đồJL cột
     class CustomChartPanel extends JPanel {
         private double[] revenue;
         private double[] cost;
