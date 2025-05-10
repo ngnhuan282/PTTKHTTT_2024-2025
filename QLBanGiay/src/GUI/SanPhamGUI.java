@@ -427,8 +427,8 @@ public class SanPhamGUI extends JPanel implements ActionListener {
             txtMaSP.setText(tblDSSP.getValueAt(i, 0).toString());
             txtTenSP.setText(tblDSSP.getValueAt(i, 1).toString());
             cbLoaiSP.setSelectedItem(tblDSSP.getValueAt(i, 2).toString());
-            txtDonGia.setText(tblDSSP.getValueAt(i, 3).toString());
-            txtSoLuong.setText(tblDSSP.getValueAt(i, 4).toString());
+            txtDonGia.setText(tblDSSP.getValueAt(i, 4).toString());
+            txtSoLuong.setText(tblDSSP.getValueAt(i, 3).toString());
             txtDonViTinh.setText(tblDSSP.getValueAt(i, 5).toString());
             String mauSac = tblDSSP.getValueAt(i, 6).toString();
             if (mauSac.equals("Đen")) rbDen.setSelected(true);
@@ -552,7 +552,7 @@ public class SanPhamGUI extends JPanel implements ActionListener {
             if (spBUS.addSP(sp)) 
             {
                 String tenLoaiSP = cbLoaiSP.getSelectedItem().toString();
-                model.addRow(new Object[]{maSP, tenSP, tenLoaiSP, donGia, soLuong, donViTinh, mauSac, kichThuoc, chatLieu, kieuDang});
+                model.addRow(new Object[]{maSP, tenSP, tenLoaiSP, soLuong, donGia, donViTinh, mauSac, kichThuoc, chatLieu, kieuDang});
                 tblDSSP.setModel(model);
                 JOptionPane.showMessageDialog(this, "Thêm sản phẩm thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 clearForm();
@@ -600,11 +600,11 @@ public class SanPhamGUI extends JPanel implements ActionListener {
             return;
         }
         
-        if(spBUS.checkMaSP(maSP))
-        {
-        	JOptionPane.showMessageDialog(this, "Mã sản phẩm đã tồn tại !", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        	return;
-        }
+//        if(spBUS.checkMaSP(maSP))
+//        {
+//        	JOptionPane.showMessageDialog(this, "Mã sản phẩm đã tồn tại !", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//        	return;
+//        }
         
         try {
             double donGia = Double.parseDouble(donGiaStr);
@@ -616,8 +616,8 @@ public class SanPhamGUI extends JPanel implements ActionListener {
                 model.setValueAt(maSP, row, 0);
                 model.setValueAt(tenSP, row, 1);
                 model.setValueAt(tenLoaiSP, row, 2);
-                model.setValueAt(donGia, row, 3);
-                model.setValueAt(soLuong, row, 4);
+                model.setValueAt(donGia, row, 4);
+                model.setValueAt(soLuong, row, 3);
                 model.setValueAt(donViTinh, row, 5);
                 model.setValueAt(mauSac, row, 6);
                 model.setValueAt(kichThuoc, row, 7);

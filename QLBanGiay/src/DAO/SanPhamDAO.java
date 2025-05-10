@@ -54,21 +54,22 @@ public class SanPhamDAO {
 	
 	public void add(SanPhamDTO sp)
 	{
-		String sql = "INSERT INTO SanPham VALUES(";
+		String sql = "INSERT INTO SanPham (MaSP, TenSP, MaLoaiSP, SoLuong, DonGia, DonViTinh, MauSac, KichThuoc, ChatLieu, KieuDang) VALUES(";
 		sql += "'" + sp.getMaSP() + "', ";
-        sql += "'" + sp.getTenSP() + "', ";
-        sql += "'" + sp.getMaLoaiSP() + "', ";
-        sql += "'" + sp.getSoLuong() + "', ";
-        sql += "'" + sp.getDonGia() + "', ";  
-        sql += "'" + sp.getDonViTinh() + "', ";
-        sql += "'" + sp.getMauSac() + "', ";
-        sql += "'" + sp.getKichThuoc() + "', "; 
-        sql += "'" + sp.getChatLieu() + "', ";
-        sql += "'" + sp.getKieuDang() + "')";
+		sql += "'" + sp.getTenSP() + "', ";
+		sql += "'" + sp.getMaLoaiSP() + "', ";
+		sql += "'" + sp.getSoLuong() + "', ";
+		sql += "'" + sp.getDonGia() + "', ";  
+		sql += "'" + sp.getDonViTinh() + "', ";
+		sql += "'" + sp.getMauSac() + "', ";
+		sql += "'" + sp.getKichThuoc() + "', "; 
+		sql += "'" + sp.getChatLieu() + "', ";
+		sql += "'" + sp.getKieuDang() + "')";
 		
 		mysql.executeUpdate(sql);
 		mysql.disConnect();
 	}
+
 	
 	public void update(SanPhamDTO sp)
 	{
@@ -82,7 +83,7 @@ public class SanPhamDAO {
 		sql += "ChatLieu='" + sp.getChatLieu() + "', ";
 		sql += "MauSac='" + sp.getMauSac() + "', ";
 		sql += "KieuDang='" + sp.getKieuDang() + "', ";
-		sql += "KichThuoc='" + sp.getKichThuoc() + "',";
+		sql += "KichThuoc='" + sp.getKichThuoc() + "'";
 		sql += "WHERE MaSP= '" + sp.getMaSP() + "'";
 		mysql.executeUpdate(sql);
 		mysql.disConnect();
