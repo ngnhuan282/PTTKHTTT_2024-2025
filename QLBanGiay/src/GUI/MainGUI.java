@@ -163,7 +163,7 @@ public class MainGUI extends JFrame implements ActionListener {
         btnKhachHangGUI.addActionListener(this);
         pNavItem.add(btnKhachHangGUI);
 
-        JButton btnHoaDon = new JButton("HÓA ĐƠN");
+        JButton btnHoaDon = new JButton("BÁN HÀNG");
         btnHoaDon.setIcon(new ImageIcon(MainGUI.class.getResource("/image/phieuNhap.png")));
         btnHoaDon.setOpaque(true);
         btnHoaDon.setHorizontalAlignment(SwingConstants.LEFT);
@@ -232,7 +232,13 @@ public class MainGUI extends JFrame implements ActionListener {
         pContent.add(new NhanVienGUI(), "NhanVien");
         pContent.add(new KhachHangGUI(), "KhachHang");
         pContent.add(new PhieuNhapGUI(), "PhieuNhap");
-        pContent.add(new HoaDonGUI(), "HoaDon");
+        try {
+			pContent.add(new BanHangTabGUI(), "HoaDon");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 //        pContent.add(new CTKMGUI(), "KhuyenMai");
         pContent.add(new ThongKeGUI(), "ThongKe");
         // Default panel
@@ -262,7 +268,7 @@ public class MainGUI extends JFrame implements ActionListener {
             case "PHIẾU NHẬP":
                 cardLayout.show(pContent, "PhieuNhap");
                 break;
-            case "HÓA ĐƠN":
+            case "BÁN HÀNG":
                 cardLayout.show(pContent, "HoaDon");
                 break;
             case "KHUYẾN MÃI":

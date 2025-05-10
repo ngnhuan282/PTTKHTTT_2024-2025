@@ -169,5 +169,16 @@ public class SanPhamBUS {
         return "Không xác định";
     }
 
+    public boolean truSoLuongSauKhiBan(String maSP, int soLuongTru) {
+        for (SanPhamDTO sp : dssp) {
+            if (sp.getMaSP().equals(maSP)) {
+                int soLuongMoi = sp.getSoLuong() - soLuongTru;
+                sp.setSoLuong(soLuongMoi);
+                new SanPhamDAO().capNhapSoLuong(maSP, soLuongMoi);
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

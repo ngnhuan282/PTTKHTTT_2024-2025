@@ -32,12 +32,24 @@ public class HoaDonBUS {
 		listHoaDon = dao.getListHoaDon();
 	}
 	
+//	public String getMaHD() {
+//		int size = listHoaDon.size() + 1;
+//		while(checkDuplicateMaHD(size+""))
+//			size++;
+//		return size + "";
+//	}
+	
 	public String getMaHD() {
-		int size = listHoaDon.size() + 1;
-		while(checkDuplicateMaHD(size+""))
-			size++;
-		return size + "";
+	    int dem = hoaDonDAO.demSoHoaDon();
+	    String maHD;
+	    do {
+	        dem++;
+	        maHD = "HD" + String.format("%03d", dem);
+	    } while (checkDuplicateMaHD(maHD));
+	    return maHD;
 	}
+
+
 	
 	public boolean checkDuplicateMaHD(String maHD) {
 		for(HoaDonDTO x : listHoaDon) {
@@ -112,5 +124,5 @@ public class HoaDonBUS {
 		return result;
 	}
 	
-	
+
 }

@@ -102,6 +102,13 @@ public class ChiTietHoaDonDAO {
     }
 
 
+    public void deleteByMaHD(String maHD) {
+        connection.getConnection(); // mở kết nối
+        String sql = "DELETE FROM chitiethoadon WHERE MaHD = '" + maHD + "'";
+        connection.executeUpdate(sql); // thực thi lệnh
+        connection.disConnect(); // đóng kết nối
+    }
+
 
 
 }

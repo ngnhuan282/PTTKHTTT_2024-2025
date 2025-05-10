@@ -70,5 +70,22 @@ public class HoaDonDAO {
 		connection.disConnect();
 	}
 	
-	
+	public int demSoHoaDon() {
+	    int count = 0;
+	    try {
+	        connection.getConnection();
+	        String sql = "SELECT COUNT(*) FROM hoadon";
+	        ResultSet rs = connection.executeQuery(sql);
+	        if (rs.next()) {
+	            count = rs.getInt(1);
+	        }
+	        rs.close();
+	        connection.disConnect();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return count;
+	}
+
+
 }

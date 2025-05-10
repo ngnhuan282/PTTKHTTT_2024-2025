@@ -129,6 +129,12 @@ public class HoaDonGUI extends JPanel implements ActionListener {
 
     public HoaDonGUI() throws SQLException {
         hoaDonBUS = new HoaDonBUS();
+        try {
+            hoaDonBUS.docDSHD(); // ✅ Đọc dữ liệu từ DB khi mở giao diện
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi đọc hóa đơn từ database: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
         chiTietHoaDonBUS = new ChiTietHoaDonBUS();
         sanPhamBUS = new SanPhamBUS();
         nhanVienBUS = new NhanVienBUS();
@@ -141,7 +147,10 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         maSPCanTang = new ArrayList<String>();
         updateRow = new ArrayList<Integer>();
         htttBUS = new HTTTBUS();
+        
+
         initComponents();
+        openBillTable();
     }
 
     public void initComponents() {
@@ -156,7 +165,7 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         JPanel pLeftHeader = new JPanel();
         pLeftHeader.setBorder(new TitledBorder(null, "Chức năng", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         pLeftHeader.setBackground(Color.WHITE);
-        pLeftHeader.setBounds(0, 0, 542, 90);
+        pLeftHeader.setBounds(0, 0, 430, 100);
         pHeaderMain.add(pLeftHeader);
         pLeftHeader.setLayout(null);
 
@@ -177,6 +186,7 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         btnThem.setVerticalTextPosition(SwingConstants.BOTTOM);
         btnThem.setHorizontalTextPosition(SwingConstants.CENTER);
         btnThem.setPreferredSize(new Dimension(120, 140));
+        btnThem.setVisible(false); // Ẩn button Thêm
 
         JButton btnSua = new JButton("Sửa");
         horizontalBox.add(btnSua);
@@ -190,6 +200,7 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         btnSua.setHorizontalTextPosition(SwingConstants.CENTER);
         btnSua.setFont(new Font("Arial", Font.PLAIN, 15));
         btnSua.setBackground(Color.WHITE);
+        btnSua.setVisible(false); // Ẩn button Sửa
 
         JButton btnXoa = new JButton("Xóa");
         horizontalBox.add(btnXoa);
@@ -202,6 +213,7 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         btnXoa.setHorizontalTextPosition(SwingConstants.CENTER);
         btnXoa.setFont(new Font("Arial", Font.PLAIN, 15));
         btnXoa.setBackground(Color.WHITE);
+        btnXoa.setVisible(false); // Ẩn button Xóa
 
         JButton btnXuatExcel = new JButton("Xuất Excel");
         horizontalBox.add(btnXuatExcel);
@@ -225,6 +237,69 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         btnXuatPDF.setFont(new Font("Arial", Font.PLAIN, 15));
         btnXuatPDF.setBorderPainted(false);
         btnXuatPDF.setBackground(Color.WHITE);
+        
+     // Button Xem chi tiết (thêm vào horizontalBox)
+     // Button Xem chi tiết (thêm vào horizontalBox)
+        btnXemCT = new JButton("Xem chi tiết");
+        horizontalBox.add(btnXemCT);
+        btnXemCT.setActionCommand("Xem chi tiết");
+        btnXemCT.addActionListener(this);
+        btnXemCT.setBackground(Color.WHITE);
+        btnXemCT.setBorderPainted(false);
+        btnXemCT.setIcon(new ImageIcon(SanPhamGUI.class.getResource("/image/detailIcon.png")));
+        btnXemCT.setFont(new Font("Arial", Font.PLAIN, 15));
+        btnXemCT.setVerticalTextPosition(SwingConstants.BOTTOM);
+        btnXemCT.setHorizontalTextPosition(SwingConstants.CENTER);
+        btnXemCT.setPreferredSize(new Dimension(120, 140));
+        
+     // Button Xác nhận (thêm vào horizontalBox)
+        btnXacNhanHD = new JButton("Xác nhận");
+        horizontalBox.add(btnXacNhanHD);
+        btnXacNhanHD.setActionCommand("Xác nhận");
+        btnXacNhanHD.setBackground(Color.WHITE);
+        btnXacNhanHD.setBorderPainted(false);
+        btnXacNhanHD.setIcon(new ImageIcon(HoaDonGUI.class.getResource("/image/lock_icon.png")));
+        btnXacNhanHD.setFont(new Font("Arial", Font.PLAIN, 15));
+        btnXacNhanHD.setVerticalTextPosition(SwingConstants.BOTTOM);
+        btnXacNhanHD.setHorizontalTextPosition(SwingConstants.CENTER);
+        btnXacNhanHD.setPreferredSize(new Dimension(120, 140));
+        
+        btnXacNhanHD.addActionListener(e -> {
+            String maHD = txtMaHD.getText().trim();
+
+            if (maHD.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn trước khi xác nhận!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(this, "Xác nhận hoàn tất hóa đơn này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
+            if (confirm != JOptionPane.YES_OPTION) return;
+
+            boolean success = chiTietHoaDonBUS.capNhatTrangThaiTheoMaHD(maHD, "1");
+
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Cập nhật trạng thái hóa đơn thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                txtMaHD.setText(maHD);
+                try {
+                    chiTietHoaDonBUS.docDSCTHD(); // Làm mới dữ liệu từ DB
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi khi đọc dữ liệu từ database: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                    return;
+                }
+                listTemp.clear();
+                for (ChiTietHDDTO x : chiTietHoaDonBUS.getListCTHD()) {
+                    if (x.getMaHD().equals(maHD)) {
+                        listTemp.add(x);
+                    }
+                }
+
+                btnXacNhanHD.setVisible(false); // Ẩn button Xác nhận sau khi hoàn tất
+                openBillDetailTable();
+            } else {
+                JOptionPane.showMessageDialog(this, "Cập nhật thất bại. Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         // === panel tìm kiếm cha ===
         JPanel panelTimKiem = new JPanel();
@@ -448,6 +523,8 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         panel_3.setBounds(732, 120, 445, 345);
         pHeaderMain.add(panel_3);
         panel_3.setLayout(null);
+        
+        
 
         JLabel lblNewLabel = new JLabel("Thông tin hóa đơn");
         lblNewLabel.setForeground(Color.BLUE);
@@ -456,32 +533,33 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         panel_3.add(lblNewLabel);
 
         txtMaHD = new JTextField();
-        txtMaHD.setBounds(148, 61, 148, 31);
+        txtMaHD.setBounds(188, 61, 148, 31);
         panel_3.add(txtMaHD);
         txtMaHD.setColumns(10);
 
         JLabel lblNewLabel_1 = new JLabel("Mã hóa đơn");
         lblNewLabel_1.setLabelFor(txtMaHD);
         lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 13));
-        lblNewLabel_1.setBounds(20, 60, 83, 31);
+        lblNewLabel_1.setBounds(80, 60, 83, 31);
         panel_3.add(lblNewLabel_1);
+        txtMaHD.setEditable(false); // Khóa chỉnh sửa
 
         JLabel lbMaKH = new JLabel("Mã khách hàng");
         lbMaKH.setFont(new Font("Tahoma", Font.BOLD, 13));
-        lbMaKH.setBounds(20, 142, 103, 31);
+        lbMaKH.setBounds(80, 142, 103, 31);
         panel_3.add(lbMaKH);
 
         txtMaKH = new JTextField();
         lbMaKH.setLabelFor(txtMaKH);
         txtMaKH.setColumns(10);
-        txtMaKH.setBounds(148, 143, 148, 31);
+        txtMaKH.setBounds(188, 143, 148, 31);
         txtMaKH.setEditable(false);
         panel_3.add(txtMaKH);
 
         JButton btnOpenMaKHList = new JButton("...");
 
         btnOpenMaKHList.setBounds(308, 148, 21, 21);
-        panel_3.add(btnOpenMaKHList);
+//        panel_3.add(btnOpenMaKHList);
         btnOpenMaKHList.addActionListener(e -> {
             JDialog dialog = new JDialog();
             dialog.setTitle("Khách hàng");
@@ -539,19 +617,19 @@ public class HoaDonGUI extends JPanel implements ActionListener {
 
         JLabel lblMaNV = new JLabel("Mã nhân viên");
         lblMaNV.setFont(new Font("Tahoma", Font.BOLD, 13));
-        lblMaNV.setBounds(20, 101, 93, 31);
+        lblMaNV.setBounds(80, 101, 93, 31);
         panel_3.add(lblMaNV);
 
         txtMaNV = new JTextField();
         lblMaNV.setLabelFor(txtMaNV);
         txtMaNV.setColumns(10);
-        txtMaNV.setBounds(148, 102, 148, 31);
+        txtMaNV.setBounds(188, 102, 148, 31);
         txtMaNV.setEditable(false);
         panel_3.add(txtMaNV);
 
         JButton btnOpenMaNVList = new JButton("...");
         btnOpenMaNVList.setBounds(308, 107, 21, 21);
-        panel_3.add(btnOpenMaNVList);
+//        panel_3.add(btnOpenMaNVList);
         btnOpenMaNVList.addActionListener(e -> {
             JDialog dialog = new JDialog();
             dialog.setTitle("Nhân Viên");
@@ -609,13 +687,13 @@ public class HoaDonGUI extends JPanel implements ActionListener {
 
         JLabel lblMSnPhm = new JLabel("Mã sản phẩm");
         lblMSnPhm.setFont(new Font("Tahoma", Font.BOLD, 13));
-        lblMSnPhm.setBounds(20, 183, 93, 31);
+        lblMSnPhm.setBounds(80, 183, 93, 31);
         panel_3.add(lblMSnPhm);
 
         txtMaSP = new JTextField();
         lblMSnPhm.setLabelFor(txtMaSP);
         txtMaSP.setColumns(10);
-        txtMaSP.setBounds(148, 184, 148, 31);
+        txtMaSP.setBounds(188, 184, 148, 31);
         txtMaSP.setEditable(false);
         panel_3.add(txtMaSP);
 
@@ -683,37 +761,37 @@ public class HoaDonGUI extends JPanel implements ActionListener {
 
         });
         btnOpenMaSPList.setBounds(308, 189, 21, 21);
-        panel_3.add(btnOpenMaSPList);
+//        panel_3.add(btnOpenMaSPList);
 
         JLabel lblSoLuong = new JLabel("Số lượng");
         lblSoLuong.setFont(new Font("Tahoma", Font.BOLD, 13));
-        lblSoLuong.setBounds(20, 224, 93, 31);
+        lblSoLuong.setBounds(80, 224, 93, 31);
         panel_3.add(lblSoLuong);
 
         txtSoLuong = new JTextField();
         lblSoLuong.setLabelFor(txtSoLuong);
         txtSoLuong.setColumns(10);
-        txtSoLuong.setBounds(148, 225, 148, 31);
+        txtSoLuong.setBounds(188, 225, 148, 31);
         panel_3.add(txtSoLuong);
-
+        txtSoLuong.setEditable(false);
         JLabel lblHTTT = new JLabel("Hình thức TT");
         lblHTTT.setFont(new Font("Tahoma", Font.BOLD, 13));
-        lblHTTT.setBounds(20, 265, 100, 31);
+        lblHTTT.setBounds(80, 265, 100, 31);
         panel_3.add(lblHTTT);
 
         comboBoxHTTT = new JComboBox<>();
-        comboBoxHTTT.setBounds(148, 265, 148, 31);
+        comboBoxHTTT.setBounds(188, 265, 148, 31);
         for (HTTTDTO h : htttBUS.getListHTTT()) {
             comboBoxHTTT.addItem(h);
         }
         panel_3.add(comboBoxHTTT);
-
+        comboBoxHTTT.setEnabled(false);
         // Đặt nút Xác nhận ngay bên cạnh comboBox
         btnXacNhanHD = new JButton("");
         btnXacNhanHD.setBounds(390, 260, 50, 38);
         btnXacNhanHD.setIcon(new ImageIcon(HoaDonGUI.class.getResource("/image/lock_icon.png")));
         btnXacNhanHD.setBackground(Color.WHITE);
-        panel_3.add(btnXacNhanHD);
+//        panel_3.add(btnXacNhanHD);
 
         btnXacNhanHD.addActionListener(e -> {
             String maHD = txtMaHD.getText().trim();
@@ -758,28 +836,37 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         });
 
 
+     // Button Hoàn tất (ẩn, không thêm vào panel_3)
         btnComplete = new JButton("Hoàn tất");
         btnComplete.setBounds(startX, btnY, btnWidth, btnHeight);
         btnComplete.setBackground(Color.WHITE);
         btnComplete.setActionCommand("Hoàn tất hóa đơn");
-        panel_3.add(btnComplete);
+        btnComplete.setVisible(false); // Ẩn button Hoàn tất
+        // panel_3.add(btnComplete);
 
+        // Button Thêm SP (ẩn, không thêm vào panel_3)
         btnAddProduct = new JButton("Thêm SP");
         btnAddProduct.setBounds(startX + (btnWidth + gap), btnY, btnWidth, btnHeight);
         btnAddProduct.setBackground(Color.WHITE);
         btnAddProduct.setActionCommand("Thêm sản phẩm");
-        panel_3.add(btnAddProduct);
+        btnAddProduct.setVisible(false);
+        // panel_3.add(btnAddProduct);
 
+        // Button Xem chi tiết (căn giữa)
         btnXemCT = new JButton("Xem chi tiết");
-        btnXemCT.setBounds(startX + 2 * (btnWidth + gap), btnY, btnWidth, btnHeight);
+        int panelWidth = 445; // Chiều rộng của panel_3 theo mã gốc
+        int centerX = (panelWidth - btnWidth) / 2; // Tính vị trí x để căn giữa
+        btnXemCT.setBounds(centerX, btnY, btnWidth, btnHeight);
         btnXemCT.setBackground(Color.WHITE);
-        panel_3.add(btnXemCT);
+//        panel_3.add(btnXemCT);
 
+        // Button Hủy (ẩn, không thêm vào panel_3)
         btnCancel = new JButton("Hủy");
         btnCancel.setBounds(startX + 3 * (btnWidth + gap), btnY, btnWidth, btnHeight);
         btnCancel.setBackground(Color.WHITE);
-        btnCancel.setActionCommand("Hủy");
-        panel_3.add(btnCancel);
+        btnCancel.setActionCommand("Hủy"); // Sửa lại ActionCommand đúng (không phải "Thêm sản phẩm")
+        btnCancel.setVisible(false);
+        // panel_3.add(btnCancel);
 
         for (JButton btn : new JButton[]{btnComplete, btnAddProduct, btnXemCT, btnCancel}) {
             btn.setFocusPainted(false);
@@ -1033,6 +1120,7 @@ public class HoaDonGUI extends JPanel implements ActionListener {
             String maKH = (String) table.getValueAt(selectedRow, 1);
             String maNV = (String) table.getValueAt(selectedRow, 2);
             Date ngayLap = (Date) table.getValueAt(selectedRow, 3);
+            
             double tongTien = (double) table.getValueAt(selectedRow, 4);
 
             listTemp.clear();
@@ -1049,7 +1137,26 @@ public class HoaDonGUI extends JPanel implements ActionListener {
                 return;
             }
 
-            printBill(maHD, maKH, maNV, ngayLap, tongTien);
+            try {
+                ArrayList<ChiTietHDDTO> dsCTHD = new ArrayList<>();
+                for (ChiTietHDDTO ct : chiTietHoaDonBUS.getListCTHD()) {
+                    if (ct.getMaHD().equals(maHD)) {
+                        dsCTHD.add(ct);
+                    }
+                }
+                String maHTTT = dsCTHD.size() > 0 ? dsCTHD.get(0).getMaTTT() : "";
+
+                XemCTHDialog dialog = new XemCTHDialog(maHD, maKH, maNV, maHTTT, dsCTHD, tongTien);
+
+                dialog.setLocationRelativeTo(null);
+                dialog.setModal(true);
+                dialog.setVisible(true);
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi mở chi tiết hóa đơn: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+
         });
 
         table_1.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1075,13 +1182,13 @@ public class HoaDonGUI extends JPanel implements ActionListener {
                     txtSoLuong.setText(table_1.getValueAt(selectedRowCTHD, 2).toString());
 
                     ChiTietHDDTO chiTietHDDTO = new ChiTietHDDTO(
-                            txtMaHD.getText(),
-                            txtMaSP.getText(),
-                            Integer.parseInt(txtSoLuong.getText()),
-                            Double.parseDouble(table_1.getValueAt(selectedRowCTHD, 3).toString()),
-                            Double.parseDouble(table_1.getValueAt(selectedRowCTHD, 4).toString()),
-                            listTemp.get(selectedRowCTHD).getTrangThai(),
-                            listTemp.get(selectedRowCTHD).getMaTTT()
+                        txtMaHD.getText(),
+                        txtMaSP.getText(),
+                        Integer.parseInt(txtSoLuong.getText()),
+                        Double.parseDouble(table_1.getValueAt(selectedRowCTHD, 3).toString()),
+                        Double.parseDouble(table_1.getValueAt(selectedRowCTHD, 4).toString()),
+                        listTemp.get(selectedRowCTHD).getTrangThai(),
+                        listTemp.get(selectedRowCTHD).getMaTTT()
                     );
 
                     maSPTruocKhiSua = txtMaSP.getText();
@@ -1099,20 +1206,10 @@ public class HoaDonGUI extends JPanel implements ActionListener {
 
                     donGia = Double.parseDouble(table_1.getValueAt(selectedRowCTHD, 3).toString());
                     String trangThai = listTemp.get(selectedRowCTHD).getTrangThai();
-                    if ("1".equals(trangThai)) {
-                        // Đã hoàn tất: không cho sửa
-                        btnAddProduct.setVisible(false);
-                        btnUpdateBillDetail.setVisible(false);
-                        btnXemCT.setVisible(true);
-                        
-                    } else {
-                        // Chưa hoàn tất: cho sửa
-                        btnAddProduct.setVisible(false);
-                        btnUpdateBillDetail.setVisible(true);
-                        btnXemCT.setVisible(false);
-                        
-                    }
-
+                    // Đảm bảo các button ẩn và btnXemCT luôn hiển thị
+                    btnAddProduct.setVisible(false);
+                    btnUpdateBillDetail.setVisible(false);
+                    btnXemCT.setVisible(true);
                 }
             }
         });
@@ -1249,6 +1346,72 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         return "Chưa xác định";
     }
 
+//    private void openBillDetailTable() {
+//        try {
+//            chiTietHoaDonBUS.docDSCTHD();
+//            listTemp.clear();
+//            String maHD = txtMaHD.getText();
+//            if (maHD != null && !maHD.isEmpty()) {
+//                for (ChiTietHDDTO x : chiTietHoaDonBUS.getListCTHD()) {
+//                    if (x.getMaHD().equals(maHD)) {
+//                        listTemp.add(x);
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            JOptionPane.showMessageDialog(this, "Lỗi khi đọc dữ liệu từ database: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+//            e.printStackTrace();
+//            return;
+//        }
+//
+//        String[] columnNameBillDetail = { "Mã hóa đơn", "Mã sản phẩm", "Số lượng", "Đơn giá", "Thành tiền", "Trạng thái", "HT thanh toán" };
+//        DefaultTableModel model1 = new DefaultTableModel(columnNameBillDetail, 0);
+//
+//        boolean isConfirmed = false;
+//
+//        for (ChiTietHDDTO x : listTemp) {
+//            String trangThai = x.getTrangThai();
+//            String trangThaiHienThi;
+//            if ("0".equals(trangThai)) {
+//                trangThaiHienThi = "Chờ xử lý";
+//            } else if ("1".equals(trangThai)) {
+//                trangThaiHienThi = "Hoàn tất";
+//                isConfirmed = true;
+//            } else {
+//                trangThaiHienThi = "Không xác định";
+//            }
+//
+//            Object[] row = {
+//                x.getMaHD(),
+//                x.getMaSP(),
+//                x.getSoLuong(),
+//                x.getDonGia(),
+//                x.getThanhTien(),
+//                trangThaiHienThi,
+//                getTenHTTT(x.getMaTTT())
+//            };
+//            model1.addRow(row);
+//        }
+//
+//        table_1.setModel(model1);
+//        if (isConfirmed) {
+//            // Căn giữa nút "Xem chi tiết"
+//            int panelWidth = panel_3.getWidth();
+//            int buttonWidth = btnXemCT.getWidth();
+//            int centeredX = (panelWidth - buttonWidth) / 2;
+//            btnXemCT.setBounds(centeredX, btnXemCT.getY(), buttonWidth, btnXemCT.getHeight());
+//        } else {
+//            // Trả lại vị trí gốc
+//            btnXemCT.setBounds(startX + 2 * (btnWidth + gap), btnY, btnWidth, btnHeight);
+//        }
+//
+//        btnAddProduct.setVisible(!isConfirmed);
+//        btnUpdateBillDetail.setVisible(false);
+//        btnComplete.setVisible(!isConfirmed);
+//        btnCancel.setVisible(!isConfirmed);
+//        btnXacNhanHD.setVisible(!isConfirmed);
+//    }
+    
     private void openBillDetailTable() {
         try {
             chiTietHoaDonBUS.docDSCTHD();
@@ -1297,21 +1460,7 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         }
 
         table_1.setModel(model1);
-        if (isConfirmed) {
-            // Căn giữa nút "Xem chi tiết"
-            int panelWidth = panel_3.getWidth();
-            int buttonWidth = btnXemCT.getWidth();
-            int centeredX = (panelWidth - buttonWidth) / 2;
-            btnXemCT.setBounds(centeredX, btnXemCT.getY(), buttonWidth, btnXemCT.getHeight());
-        } else {
-            // Trả lại vị trí gốc
-            btnXemCT.setBounds(startX + 2 * (btnWidth + gap), btnY, btnWidth, btnHeight);
-        }
-
-        btnAddProduct.setVisible(!isConfirmed);
-        btnUpdateBillDetail.setVisible(false);
-        btnComplete.setVisible(!isConfirmed);
-        btnCancel.setVisible(!isConfirmed);
+        // Chỉ điều chỉnh hiển thị btnXacNhanHD (các button khác đã ẩn)
         btnXacNhanHD.setVisible(!isConfirmed);
     }
 
@@ -1451,13 +1600,13 @@ public class HoaDonGUI extends JPanel implements ActionListener {
         }
     }
 
-    public void xuatPDF(String maHD) {
+    public static  void xuatPDF(String maHD) {
         try {
             PDFReporter pdfReporter = new PDFReporter();
             pdfReporter.writeHoaDon(maHD);
-            JOptionPane.showMessageDialog(this, "Xuất PDF thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Xuất PDF thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi xuất PDF: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Lỗi khi xuất PDF: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
     }
@@ -1498,7 +1647,73 @@ public class HoaDonGUI extends JPanel implements ActionListener {
             dateChooserTuNgay.setDate(null);
             dateChooserDenNgay.setDate(null);
             txtSearch.setText("");
+        } else if (str.equals("Xem chi tiết")) {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn một hóa đơn để xem chi tiết!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            String maHD = (String) table.getValueAt(selectedRow, 0);
+            String maKH = (String) table.getValueAt(selectedRow, 1);
+            String maNV = (String) table.getValueAt(selectedRow, 2);
+            Date ngayLap = (Date) table.getValueAt(selectedRow, 3);
+            double tongTien = (double) table.getValueAt(selectedRow, 4);
+
+            listTemp.clear();
+            try {
+                chiTietHoaDonBUS.docDSCTHD();
+                for (ChiTietHDDTO x : chiTietHoaDonBUS.getListCTHD()) {
+                    if (x.getMaHD().equals(maHD)) {
+                        listTemp.add(x);
+                    }
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi đọc dữ liệu từ database: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+                return;
+            }
+
+            try {
+                ArrayList<ChiTietHDDTO> dsCTHD = new ArrayList<>();
+                for (ChiTietHDDTO ct : chiTietHoaDonBUS.getListCTHD()) {
+                    if (ct.getMaHD().equals(maHD)) {
+                        dsCTHD.add(ct);
+                    }
+                }
+                String maHTTT = dsCTHD.size() > 0 ? dsCTHD.get(0).getMaTTT() : "";
+                XemCTHDialog dialog = new XemCTHDialog(maHD, maKH, maNV, maHTTT, dsCTHD, tongTien);
+
+                dialog.setLocationRelativeTo(null);
+                dialog.setModal(true);
+                dialog.setVisible(true);
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi mở chi tiết hóa đơn: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
         }
+    }
+    public void setBanHangData(String maNV, ArrayList<ChiTietHDDTO> danhSachSP) {
+        txtMaHD.setText(hoaDonBUS.getMaHD());
+        txtMaNV.setText(maNV);
+        listTemp.clear();
+        soLuongTruocKhiUpdate.clear();
+
+        for (ChiTietHDDTO dto : danhSachSP) {
+            listTemp.add(dto);
+            soLuongTruocKhiUpdate.add(0); // vì là mới thêm từ giỏ hàng
+        }
+
+        openBillDetailTable();
+    }
+
+    public HoaDonBUS getHoaDonBUS() {
+        return this.hoaDonBUS;
+    }
+
+    public ChiTietHoaDonBUS getChiTietHoaDonBUS() {
+        return this.chiTietHoaDonBUS;
     }
 
     public void xuatExcel() {

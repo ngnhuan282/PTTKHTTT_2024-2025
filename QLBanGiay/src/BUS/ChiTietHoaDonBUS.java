@@ -105,6 +105,10 @@ public class ChiTietHoaDonBUS {
         return result;
     }
 
+    public void deleteByMaHD(String maHD) throws SQLException {
+        ChiTietHoaDonDAO dao = new ChiTietHoaDonDAO();
+        dao.deleteByMaHD(maHD);
+    }
 
 
 }

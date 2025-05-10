@@ -368,7 +368,7 @@ public class PDFReporter {
             }
 
             // Thêm thông tin hóa đơn
-            Paragraph paragraph1 = new Paragraph("Mã hóa đơn: HD-" + hd.getMaHD(), fontNormal10);
+            Paragraph paragraph1 = new Paragraph("Mã hóa đơn: " + hd.getMaHD(), fontNormal10);
 
             // Lấy thông tin khách hàng
             KhachHangDAO khachHangDAO = KhachHangDAO.getKhachHangDAO();
