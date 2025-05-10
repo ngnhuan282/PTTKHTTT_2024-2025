@@ -42,4 +42,8 @@ public class QuyenBUS {
 	public boolean checkQuyen(int maTK, int maQuyen) {
 		return quyenDAO.checkQuyen(maTK, maQuyen);
 	}
+	
+	public void clearPhanQueyn(int maTK) {
+		quyenDAO.clearPhanQuyenNV(maTK);
+	}
 }

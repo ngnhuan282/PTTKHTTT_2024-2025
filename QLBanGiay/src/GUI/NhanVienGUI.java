@@ -711,6 +711,9 @@ public class NhanVienGUI extends JPanel implements ActionListener {
 
         int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa nhân viên này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
+        	int maTK = tkBUS.getMaTK(tblDSNV.getValueAt(selectedRow, 6).toString(), tblDSNV.getValueAt(selectedRow, 7).toString());
+        	
+        	quyenBUS.clearPhanQueyn(maTK);
             nvBUS.deleteStaff(selectedRow);
             tkBUS.deleteAccount(tblDSNV.getValueAt(selectedRow, 6).toString(), tblDSNV.getValueAt(selectedRow, 7).toString());
             model.removeRow(selectedRow);

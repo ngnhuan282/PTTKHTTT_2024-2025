@@ -228,6 +228,9 @@ public class MainGUI extends JFrame implements ActionListener {
         btnPhieuXuat.setBounds(20, 265, 200, 35);
         btnPhieuXuat.addActionListener(this);
         pNavItem.add(btnPhieuXuat);
+        if(!quyenBUS.checkQuyen(maTK, 9)) {
+        	btnPhieuXuat.setVisible(false);
+        }
 
         JButton btnKhuyenMaiGUI = new JButton("KHUYẾN MÃI");
         btnKhuyenMaiGUI.setIcon(new ImageIcon(MainGUI.class.getResource("/image/saleIcon.png")));
