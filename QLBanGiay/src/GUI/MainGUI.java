@@ -164,7 +164,7 @@ public class MainGUI extends JFrame implements ActionListener {
         pNavItem.add(btnKhachHangGUI);
 
         JButton btnBanHang = new JButton("BÁN HÀNG");
-        btnBanHang.setIcon(new ImageIcon(MainGUI.class.getResource("/image/phieuNhap.png")));
+        btnBanHang.setIcon(new ImageIcon(MainGUI.class.getResource("/image/shopIcon.png")));
         btnBanHang.setOpaque(true);
         btnBanHang.setHorizontalAlignment(SwingConstants.LEFT);
         btnBanHang.setForeground(Color.WHITE);
