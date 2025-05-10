@@ -18,9 +18,9 @@ public class ThongKeNhaCungCapDAO {
 
             String sql = "SELECT pn.MaNCC, ncc.TenNCC, " +
                     "SUM(ct.SoLuong) AS TongSL, SUM(ct.ThanhTien) AS TongTien " +
-                    "FROM phieunhap pn " +
-                    "JOIN chitietphieunhap ct ON pn.MaPhieuNH = ct.MaPhieuNH " +
-                    "JOIN nhacungcap ncc ON pn.MaNCC = ncc.MaNCC " +
+                    "FROM phieunhaphang pn " +
+                    "JOIN ctpnh ct ON pn.MaPhieuNH = ct.MaPhieuNH " +
+                    "JOIN nhacc ncc ON pn.MaNCC = ncc.MaNCC " +
                     "WHERE pn.NgayLap BETWEEN '" + from + "' AND '" + to + "' " +
                     "AND (LOWER(ncc.MaNCC) LIKE '%" + keyword + "%' OR LOWER(ncc.TenNCC) LIKE '%" + keyword + "%') " +
                     "GROUP BY pn.MaNCC, ncc.TenNCC";
@@ -56,8 +56,8 @@ public class ThongKeNhaCungCapDAO {
         ArrayList<ThongKeNhaCungCapDTO> result = new ArrayList<>();
         try {
             String sql = "SELECT pn.MaNCC, SUM(ct.SoLuong) AS TongSL, SUM(ct.ThanhTien) AS TongTien " +
-                         "FROM phieunhap pn " +
-                         "JOIN chitietphieunhap ct ON pn.MaPhieuNH = ct.MaPhieuNH " +
+                         "FROM phieunhaphang pn " +
+                         "JOIN ctpnh ct ON pn.MaPhieuNH = ct.MaPhieuNH " +
                          "GROUP BY pn.MaNCC";
 
             ResultSet rs = mysql.executeQuery(sql);
