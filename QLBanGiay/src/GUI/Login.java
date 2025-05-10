@@ -126,10 +126,11 @@ public class Login extends JFrame {
         TaiKhoanBUS taiKhoanBUS = new TaiKhoanBUS();
         if(taiKhoanBUS.login(username, password))
         {	
+        	int maTK = taiKhoanBUS.getMaTK(username, password);
         	JOptionPane.showMessageDialog(this, "Đăng nhập thành công!", 
         			"Thông báo", JOptionPane.INFORMATION_MESSAGE);
         	try {
-				MainGUI mainGUI = new MainGUI(username);
+				MainGUI mainGUI = new MainGUI(username, maTK);
 				mainGUI.setVisible(true);
 				mainGUI.setLocationRelativeTo(null);
 				dispose();

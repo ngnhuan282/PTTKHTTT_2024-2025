@@ -43,19 +43,21 @@ public class NhanVienDAO {
 		return listNhanVienDTO;
 	}
 	
-	public void addNhanVienDAO(NhanVienDTO x) {
-		String sql = "INSERT INTO nhanvien(MaNV, Ho, Ten, SDT, LuongThang)"
-				+ "VALUES('"+ x.getMaNV()+"', '"+ x.getHo() +"', '"+ x.getTen() +"', '" + x.getSdt() + "', '" + x.getLuong() + "')";
+	public void addNhanVienDAO(NhanVienDTO x, int maTK, int maChucVu) {
+		String sql = "INSERT INTO nhanvien(MaNV, Ho, Ten, SDT, LuongThang, MaTK, MaChucVu)"
+				+ "VALUES('"+ x.getMaNV()+"', '"+ x.getHo() +"', '"+ x.getTen() +"', '" + x.getSdt() + "', '" + x.getLuong() + "', '"+ maTK +"', '"+ maChucVu +"')";
 		connection.executeUpdate(sql);
 	}
 	
-	public void updateNhanVienDAO(NhanVienDTO x) {
+	public void updateNhanVienDAO(NhanVienDTO x, int maChucVu) {
 		String sql = "UPDATE nhanvien"
 				+ " SET"
 				+ " Ho = '" + x.getHo() + "'"
 				+ ", Ten = '" + x.getTen() + "'"
 				+ ", SDT = '" + x.getSdt() + "'"
-				+ " WHERE LuongThang = '" + x.getLuong() + "'";
+				+ ", LuongThang = '" + x.getLuong() + "'"
+				+ ", MaChucVu = " + maChucVu + ""
+				+ " WHERE MaNV ='"+ x.getMaNV() +"'";
 					
 		connection.executeUpdate(sql);
 	}
@@ -64,6 +66,7 @@ public class NhanVienDAO {
 		String sql  = "DELETE FROM nhanvien WHERE MaNV ='" + x.getMaNV() + "'";
 		connection.executeUpdate(sql);
 	}
+	
 	
 	public int[] ImportExcel(File file) {
 	    int addedRows = 0;

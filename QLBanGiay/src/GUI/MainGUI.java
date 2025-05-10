@@ -18,6 +18,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
+import BUS.QuyenBUS;
+
 public class MainGUI extends JFrame implements ActionListener {
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
@@ -27,11 +29,13 @@ public class MainGUI extends JFrame implements ActionListener {
     private CardLayout cardLayout;
     private JPanel pContent;
     private String username;
+    private int maTK;
+    private QuyenBUS quyenBUS;
     
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                MainGUI frame = new MainGUI("Admin");
+                MainGUI frame = new MainGUI("Admin", 0);
                 frame.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -39,11 +43,15 @@ public class MainGUI extends JFrame implements ActionListener {
         });
     }
 
-    public MainGUI(String username) throws SQLException {
+    public MainGUI(String username, int maTK) throws SQLException {
     	this.username = username;
+    	this.maTK = maTK;
+    	quyenBUS = new QuyenBUS();
         initComponents();
     }
+    
 
+    
     private void initComponents() throws SQLException {
         setTitle("Hệ thống quản lý bán giày");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -126,6 +134,9 @@ public class MainGUI extends JFrame implements ActionListener {
         btnSanPhamGUI.setBounds(20, 193, 200, 35);
         btnSanPhamGUI.addActionListener(this);
         pNavItem.add(btnSanPhamGUI);
+        if(!quyenBUS.checkQuyen(maTK, 2)) {
+        	btnSanPhamGUI.setVisible(false);
+        }
 
         JButton btnNhaCungCapGUI = new JButton("NHÀ CUNG CẤP");
         btnNhaCungCapGUI.setIcon(new ImageIcon(MainGUI.class.getResource("/image/providerIcon.png")));
@@ -138,6 +149,9 @@ public class MainGUI extends JFrame implements ActionListener {
         btnNhaCungCapGUI.setBounds(20, 85, 200, 35);
         btnNhaCungCapGUI.addActionListener(this);
         pNavItem.add(btnNhaCungCapGUI);
+        if(!quyenBUS.checkQuyen(maTK, 3)) {
+        	btnNhaCungCapGUI.setVisible(false);
+        }
 
         JButton btnNhanVienGUI = new JButton("NHÂN VIÊN");
         btnNhanVienGUI.setIcon(new ImageIcon(MainGUI.class.getResource("/image/employeeIcon.png")));
@@ -150,6 +164,9 @@ public class MainGUI extends JFrame implements ActionListener {
         btnNhanVienGUI.setBounds(20, 121, 200, 35);
         btnNhanVienGUI.addActionListener(this);
         pNavItem.add(btnNhanVienGUI);
+        if(!quyenBUS.checkQuyen(maTK, 4)) {
+        	btnNhanVienGUI.setVisible(false);
+        }
 
         JButton btnKhachHangGUI = new JButton("KHÁCH HÀNG");
         btnKhachHangGUI.setIcon(new ImageIcon(MainGUI.class.getResource("/image/clientIcon.png")));
@@ -162,6 +179,10 @@ public class MainGUI extends JFrame implements ActionListener {
         btnKhachHangGUI.setBounds(20, 157, 200, 35);
         btnKhachHangGUI.addActionListener(this);
         pNavItem.add(btnKhachHangGUI);
+        if(!quyenBUS.checkQuyen(maTK, 5)) {
+        	btnKhachHangGUI.setVisible(false);
+        }
+
 
         JButton btnBanHang = new JButton("BÁN HÀNG");
         btnBanHang.setIcon(new ImageIcon(MainGUI.class.getResource("/image/shopIcon.png")));
@@ -176,6 +197,10 @@ public class MainGUI extends JFrame implements ActionListener {
 
         btnBanHang.addActionListener(this);
         pNavItem.add(btnBanHang);
+        if(!quyenBUS.checkQuyen(maTK, 1)) {
+        	btnBanHang.setVisible(false);
+        }
+
 
         JButton btnPhieuNhap = new JButton("PHIẾU NHẬP");
         btnPhieuNhap.setIcon(new ImageIcon(MainGUI.class.getResource("/image/phieuXuat.png")));
@@ -188,6 +213,9 @@ public class MainGUI extends JFrame implements ActionListener {
         btnPhieuNhap.setBounds(20, 229, 200, 35);
         btnPhieuNhap.addActionListener(this);
         pNavItem.add(btnPhieuNhap);
+        if(!quyenBUS.checkQuyen(maTK, 6)) {
+        	btnPhieuNhap.setVisible(false);
+        }
 
         JButton btnPhieuXuat = new JButton("PHIẾU XUẤT");
         btnPhieuXuat.setOpaque(true);
@@ -212,6 +240,9 @@ public class MainGUI extends JFrame implements ActionListener {
         btnKhuyenMaiGUI.setBounds(20, 301, 200, 35);
         btnKhuyenMaiGUI.addActionListener(this);
         pNavItem.add(btnKhuyenMaiGUI);
+        if(!quyenBUS.checkQuyen(maTK, 8)) {
+        	btnKhuyenMaiGUI.setVisible(false);
+        }
         
         JButton btnThongKe = new JButton("THỐNG KÊ");
         btnThongKe.setOpaque(true);
@@ -224,6 +255,9 @@ public class MainGUI extends JFrame implements ActionListener {
         btnThongKe.setBounds(20, 337, 200, 35);
         btnThongKe.addActionListener(this);
         pNavItem.add(btnThongKe);
+        if(!quyenBUS.checkQuyen(maTK, 7)) {
+        	btnThongKe.setVisible(false);
+        }
 
         // Main content area
         JPanel pMain = new JPanel();
@@ -243,7 +277,7 @@ public class MainGUI extends JFrame implements ActionListener {
         pContent.add(new TrangChuGUI(), "TrangChu");
         pContent.add(new SanPhamGUI(), "SanPham");
         pContent.add(new NhaCungCapGUI(), "NhaCungCap");
-        pContent.add(new NhanVienGUI(), "NhanVien");
+        pContent.add(new NhanVienGUI(maTK, this), "NhanVien");
         pContent.add(new KhachHangGUI(), "KhachHang");
         pContent.add(new PhieuNhapGUI(), "PhieuNhap");
         pContent.add(new PhieuXuatGUI(), "PhieuXuat");

@@ -35,7 +35,7 @@ public class NhanVienBUS {
 		return false;
 	}
 	
-	public void addStaff(String maNV, String ho, String ten, String sdt,double luong) {
+	public void addStaff(String maNV, String ho, String ten, String sdt,double luong, int maTK, int maChucVu) {
 		NhanVienDTO nhanVien = new NhanVienDTO();
 		nhanVien.setMaNV(maNV);
 		nhanVien.setHo(ho);
@@ -43,16 +43,16 @@ public class NhanVienBUS {
 		nhanVien.setSdt(sdt);
 		nhanVien.setLuong(luong);
 		listNhanVien.add(nhanVien);
-		nhanVienDAO.addNhanVienDAO(nhanVien);
+		nhanVienDAO.addNhanVienDAO(nhanVien, maTK, maChucVu);
 	}
 	
-	public void fixStaff(String ho, String ten, String sdt,double luong,int index) {
+	public void fixStaff(String ho, String ten, String sdt,double luong, int maChucVu, int index) {
 		NhanVienDTO nv = listNhanVien.get(index);
 		nv.setHo(ho);
 		nv.setTen(ten);
 		nv.setSdt(sdt);
 		nv.setLuong(luong);
-		nhanVienDAO.updateNhanVienDAO(nv);
+		nhanVienDAO.updateNhanVienDAO(nv, maChucVu);
 	}
 	public void deleteStaff(int index) {
 		NhanVienDTO nv = listNhanVien.get(index);

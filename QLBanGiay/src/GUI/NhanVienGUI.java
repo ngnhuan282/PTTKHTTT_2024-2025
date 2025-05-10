@@ -1,21 +1,31 @@
 package GUI;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -25,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
@@ -32,37 +43,72 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import BUS.ChucVuBUS;
 import BUS.NhanVienBUS;
+import BUS.QuyenBUS;
+import BUS.TaiKhoanBUS;
 import DAO.SanPhamDAO;
+import DTO.ChucVuDTO;
 import DTO.NhanVienDTO;
+import DTO.QuyenDTO;
+import DTO.TaiKhoanDTO;
 import GUI.ExcelExporter;
 
 public class NhanVienGUI extends JPanel implements ActionListener {
     private static final long serialVersionUID = 1L;
     private DefaultTableModel model;
+    private JButton btnLamMoi;
+    private JButton btnPhanQuyen;
     private JTable tblDSNV;
     private JTextField txtMaNV, txtHoNV, txtTenNV, txtSDT, txtLuong, txtSearch;
     private JComboBox<String> cboxSearch;
+    JComboBox<String> cboxChucVu;
     private JButton btnEditMode, btnNhapExcel, btnXuatExcel;
     private NhanVienBUS nvBUS;
+    private TaiKhoanBUS tkBUS;
+    private ChucVuBUS chucVuBUS;
+    private QuyenBUS quyenBUS;
+    private String[] chucVu;
     private boolean isEditMode = false;
+    private JTextField txtUsername;
+    private JTextField txtPassword;
+    private int currentMaTK;
+    private int currentMaChucVu;
+    private MainGUI mainGUI;
 
-    public NhanVienGUI() throws SQLException {
+    public NhanVienGUI(int currentMaTK, MainGUI mainGUI) throws SQLException {
+    	
+    	this.mainGUI = mainGUI;
         nvBUS = new NhanVienBUS();
-        Object[] header = {"Mã NV", "Họ NV", "Tên NV", "Số Điện Thoại", "Lương Tháng"};
+        tkBUS = new TaiKhoanBUS();
+        chucVuBUS = new ChucVuBUS();
+        quyenBUS = new QuyenBUS();
+        this.currentMaTK = currentMaTK; 
+        currentMaChucVu = chucVuBUS.getCurrentMaChucVu(this.currentMaTK);
+        Object[] header = {"Mã NV", "Họ NV", "Tên NV", "Số Điện Thoại", "Lương Tháng", "Chức vụ","Username", "Password"};
+        
         model = new DefaultTableModel(header, 0);
         tblDSNV = new JTable(model);
-
+        
+        cboxChucVu = new JComboBox<String>();
+        cboxChucVu.addItem("Chọn chức vụ");
+        for(ChucVuDTO x : chucVuBUS.getListChucVu()) {
+        	cboxChucVu.addItem(x.getTenChucVu());
+        }
+        
         initComponents();
         fillTableWithSampleData();
     }
 
     private void fillTableWithSampleData() {
+    	btnLamMoi.setVisible(false);
         model.setRowCount(0);
         ArrayList<NhanVienDTO> dsNV = nvBUS.getListNhanVien();
         for (NhanVienDTO nv : dsNV) {
+        	TaiKhoanDTO tk = tkBUS.getAccount(nv.getMaNV());
+        	ChucVuDTO cv = chucVuBUS.getChucVu(nv.getMaNV());
             model.addRow(new Object[]{
-                nv.getMaNV(), nv.getHo(), nv.getTen(), nv.getSdt(), nv.getLuong()
+                nv.getMaNV(), nv.getHo(), nv.getTen(), nv.getSdt(), nv.getLuong(), cv.getTenChucVu(), tk.getTenDangNhap(), tk.getMatKhau()
             });
         }
         tblDSNV.setModel(model);
@@ -166,14 +212,25 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         btnXuatExcel.setPreferredSize(new Dimension(100, 140));
         horizontalBox.add(btnXuatExcel);
         
-        JButton btnLamMoi = new JButton("Làm mới");
+        btnLamMoi = new JButton("Làm mới");
         btnLamMoi.setBackground(Color.WHITE);
         btnLamMoi.setIcon(new ImageIcon(SanPhamGUI.class.getResource("/image/reload30.png")));
         btnLamMoi.setFont(new Font("Arial", Font.PLAIN, 13));
         btnLamMoi.setBounds(1045, 31, 126, 28);
         btnLamMoi.setActionCommand("Reload");
-        btnLamMoi.addActionListener(this);
+        btnLamMoi.addActionListener(e -> fillTableWithSampleData());
+        btnLamMoi.setVisible(false);
         pHeaderMain.add(btnLamMoi);
+        
+        
+        btnPhanQuyen = new JButton("Phân quyền");
+        btnPhanQuyen.setBackground(Color.WHITE);
+        btnPhanQuyen.setFont(new Font("Arial", Font.PLAIN, 13));
+        btnPhanQuyen.setBounds(1045, 31, 126, 28);
+        btnPhanQuyen.setActionCommand("Reload");
+        btnPhanQuyen.addActionListener(e -> phanQuyenDialog());
+        btnPhanQuyen.setVisible(false);
+        pHeaderMain.add(btnPhanQuyen);
         
         String[] listKeyWord = {"Mã NV", "Tên NV"};
         cboxSearch = new JComboBox<String>(listKeyWord);
@@ -200,17 +257,17 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         JPanel panel = new JPanel();
         panel.setBorder(new LineBorder(Color.LIGHT_GRAY, 2, true));
         panel.setBackground(Color.WHITE);
-        panel.setBounds(2, 110, 265, 655);
+        panel.setBounds(0, 110, 265, 655);
         pMain.add(panel);
         panel.setLayout(null);
 
         JLabel lbMaNV = new JLabel("Mã nhân viên");
         lbMaNV.setFont(new Font("Verdana", Font.BOLD, 12));
-        lbMaNV.setBounds(10, 41, 100, 23);
+        lbMaNV.setBounds(10, 30, 100, 23);
         panel.add(lbMaNV);
 
         txtMaNV = new JTextField();
-        txtMaNV.setBounds(10, 66, 245, 32);
+        txtMaNV.setBounds(10, 52, 245, 32);
         txtMaNV.setColumns(10);
         txtMaNV.setEditable(false);
         txtMaNV.setFocusable(false);
@@ -218,48 +275,48 @@ public class NhanVienGUI extends JPanel implements ActionListener {
 
         JLabel lbHoNV = new JLabel("Họ nhân viên");
         lbHoNV.setFont(new Font("Verdana", Font.BOLD, 12));
-        lbHoNV.setBounds(10, 121, 100, 23);
+        lbHoNV.setBounds(10, 94, 100, 23);
         panel.add(lbHoNV);
 
         txtHoNV = new JTextField();
         txtHoNV.setColumns(10);
-        txtHoNV.setBounds(10, 146, 245, 32);
+        txtHoNV.setBounds(10, 120, 245, 32);
         txtHoNV.setEditable(false);
         txtHoNV.setFocusable(false);
         panel.add(txtHoNV);
 
         JLabel lbTenNV = new JLabel("Tên nhân viên");
         lbTenNV.setFont(new Font("Verdana", Font.BOLD, 12));
-        lbTenNV.setBounds(10, 201, 100, 23);
+        lbTenNV.setBounds(10, 162, 100, 23);
         panel.add(lbTenNV);
 
         txtTenNV = new JTextField();
         txtTenNV.setColumns(10);
-        txtTenNV.setBounds(10, 226, 245, 32);
+        txtTenNV.setBounds(10, 184, 245, 32);
         txtTenNV.setEditable(false);
         txtTenNV.setFocusable(false);
         panel.add(txtTenNV);
 
         JLabel lbSDT = new JLabel("Số điện thoại");
         lbSDT.setFont(new Font("Verdana", Font.BOLD, 12));
-        lbSDT.setBounds(10, 281, 100, 23);
+        lbSDT.setBounds(10, 226, 100, 23);
         panel.add(lbSDT);
 
         txtSDT = new JTextField();
         txtSDT.setColumns(10);
-        txtSDT.setBounds(10, 306, 245, 32);
+        txtSDT.setBounds(10, 259, 245, 32);
         txtSDT.setEditable(false);
         txtSDT.setFocusable(false);
         panel.add(txtSDT);
 
         JLabel lbLuong = new JLabel("Lương tháng");
         lbLuong.setFont(new Font("Verdana", Font.BOLD, 12));
-        lbLuong.setBounds(10, 361, 122, 23);
+        lbLuong.setBounds(10, 301, 122, 23);
         panel.add(lbLuong);
 
         txtLuong = new JTextField();
         txtLuong.setColumns(10);
-        txtLuong.setBounds(10, 386, 245, 32);
+        txtLuong.setBounds(10, 334, 245, 32);
         txtLuong.setEditable(false);
         txtLuong.setFocusable(false);
         panel.add(txtLuong);
@@ -272,6 +329,42 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         btnEditMode.setBounds(215, 15, 37, 20);
         btnEditMode.addActionListener(e -> toggleEditMode());
         panel.add(btnEditMode);
+        
+        txtUsername = new JTextField();
+        txtUsername.setFocusable(false);
+        txtUsername.setEditable(false);
+        txtUsername.setColumns(10);
+        txtUsername.setBounds(10, 479, 245, 32);
+        panel.add(txtUsername);
+        
+        JLabel lbUsername = new JLabel("Tên đăng nhập");
+        lbUsername.setFont(new Font("Verdana", Font.BOLD, 12));
+        lbUsername.setBounds(10, 446, 122, 23);
+        panel.add(lbUsername);
+        
+        txtPassword = new JTextField();
+        txtPassword.setFocusable(false);
+        txtPassword.setEditable(false);
+        txtPassword.setColumns(10);
+        txtPassword.setBounds(10, 546, 245, 32);
+        panel.add(txtPassword);
+        
+        JLabel lbPassword = new JLabel("Mật khẩu");
+        lbPassword.setFont(new Font("Verdana", Font.BOLD, 12));
+        lbPassword.setBounds(10, 521, 122, 23);
+        panel.add(lbPassword);
+        
+        JLabel lbUsername_1 = new JLabel("Chức Vụ");
+        lbUsername_1.setFont(new Font("Verdana", Font.BOLD, 12));
+        lbUsername_1.setBounds(10, 376, 122, 23);
+        panel.add(lbUsername_1);
+        
+        cboxChucVu.setForeground(Color.BLACK);
+        cboxChucVu.setFont(new Font("Arial", Font.PLAIN, 14));
+        cboxChucVu.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+        cboxChucVu.setBackground(Color.WHITE);
+        cboxChucVu.setBounds(10, 405, 245, 28);
+        panel.add(cboxChucVu);
 
         // Table
         tblDSNV.setFont(new Font("Verdana", Font.PLAIN, 12));
@@ -289,6 +382,106 @@ public class NhanVienGUI extends JPanel implements ActionListener {
 
         tblDSNV.getSelectionModel().addListSelectionListener(e -> getInforFromTable());
     }
+    
+    public void phanQuyenDialog() {
+    	 		int selectedRow = tblDSNV.getSelectedRow();
+    	 		String tenDangNhap = tblDSNV.getValueAt(selectedRow, 6).toString();
+    	 		String matKhau = tblDSNV.getValueAt(selectedRow, 7).toString();
+    	 		int maTK = tkBUS.getMaTK(tenDangNhap, matKhau);
+    			
+    	        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(this), "🔐 Phân Quyền Nhân Viên", Dialog.ModalityType.APPLICATION_MODAL);
+    	        dialog.setSize(400, 350);
+    	        dialog.setLocationRelativeTo(this);
+    	        dialog.getContentPane().setLayout(new BorderLayout(10, 10));
+
+    	        JLabel lblTitle = new JLabel("Chọn các quyền cho nhân viên", SwingConstants.CENTER);
+    	        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
+    	        lblTitle.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    	        dialog.getContentPane().add(lblTitle, BorderLayout.NORTH);
+
+    	        JPanel panelCheck = new JPanel(new GridLayout(0, 1, 5, 5));
+    	        panelCheck.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+    	        Map<Integer, JCheckBox> mapCheckBox = new LinkedHashMap<>();
+
+    	        for (QuyenDTO x : quyenBUS.getListQuyen()) {
+    	            JCheckBox cb = new JCheckBox(x.getTenQuyen());
+    	            cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    	            cb.setBackground(new Color(245, 245, 245));
+    	            mapCheckBox.put(x.getMaQuyen(), cb);
+    	            panelCheck.add(cb);
+    	            if(quyenBUS.checkQuyen(maTK, x.getMaQuyen()))
+    	            	cb.setSelected(true);
+    	        }
+
+    	        JScrollPane scrollPane = new JScrollPane(panelCheck);
+    	        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+    	        dialog.getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+    	        // Panel chứa nút
+    	        JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
+    	        panelButtons.setBackground(Color.WHITE);
+    	        JButton btnLuu = new JButton("💾 Lưu");
+    	        btnLuu.setActionCommand("Lưu");
+    	        JButton btnHuy = new JButton("❌ Hủy");
+
+    	        btnLuu.setFocusPainted(false);
+    	        btnHuy.setFocusPainted(false);
+    	        btnLuu.setBackground(new Color(59, 130, 246));
+    	        btnLuu.setForeground(Color.WHITE);
+    	        btnHuy.setBackground(new Color(220, 53, 69));
+    	        btnHuy.setForeground(Color.WHITE);
+
+    	        btnLuu.setPreferredSize(new Dimension(80, 30));
+    	        btnHuy.setPreferredSize(new Dimension(80, 30));
+
+    	        List<Integer> quyenDaChon = new ArrayList<>();
+    	        
+
+    	    
+
+    	        btnLuu.addActionListener(e -> {
+    	            for (Map.Entry<Integer, JCheckBox> entry : mapCheckBox.entrySet()) {
+    	                if (entry.getValue().isSelected()) {
+    	                    quyenDaChon.add(entry.getKey());
+    	                }
+    	            }
+    	            
+    	            quyenBUS.phanQuyenNV(maTK, quyenDaChon);
+    	            dialog.dispose();
+    	            
+    	            if(maTK == currentMaTK) {
+
+        	            if(mainGUI != null) {
+        	            	mainGUI.dispose();
+        	            	MainGUI main = null;
+        	            	try {
+    							main = new MainGUI(tkBUS.getUsername(maTK), maTK);
+    						} catch (SQLException e1) {
+    							// TODO Auto-generated catch block
+    							e1.printStackTrace();
+    						}
+        	            	main.setVisible(true);
+        	            	main.setLocationRelativeTo(null);
+        	            }
+    	            }
+    	        });
+
+    	        btnHuy.addActionListener(e -> {
+    	            quyenDaChon.clear();
+    	            
+    	            dialog.dispose();
+    	        });
+ 
+    	        panelButtons.add(btnHuy);
+    	        panelButtons.add(btnLuu);
+
+    	        dialog.getContentPane().add(panelButtons, BorderLayout.SOUTH);
+
+    	        // Tô nền dialog đẹp hơn
+    	        dialog.getContentPane().setBackground(Color.WHITE);
+    	        dialog.setVisible(true);
+    	        
+    }
 
     public void toggleEditMode() {
         isEditMode = !isEditMode;
@@ -302,9 +495,17 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         txtSDT.setFocusable(isEditMode);
         txtLuong.setEditable(isEditMode);
         txtLuong.setFocusable(isEditMode);
+        txtUsername.setEditable(isEditMode);
+        txtUsername.setFocusable(isEditMode);
+        txtPassword.setEditable(isEditMode);
+        txtPassword.setFocusable(isEditMode);
     }
 
     public void getInforFromTable() {
+    	if(this.currentMaChucVu == 1) {
+    		btnLamMoi.setVisible(false);
+        	btnPhanQuyen.setVisible(true);
+    	}
         int selectedRow = tblDSNV.getSelectedRow();
         if (selectedRow >= 0) {
             txtMaNV.setEditable(false);
@@ -313,6 +514,9 @@ public class NhanVienGUI extends JPanel implements ActionListener {
             txtTenNV.setText(tblDSNV.getValueAt(selectedRow, 2).toString());
             txtSDT.setText(tblDSNV.getValueAt(selectedRow, 3).toString());
             txtLuong.setText(tblDSNV.getValueAt(selectedRow, 4).toString());
+            cboxChucVu.setSelectedItem(tblDSNV.getValueAt(selectedRow, 5).toString());
+            txtUsername.setText(tblDSNV.getValueAt(selectedRow, 6).toString());
+            txtPassword.setText(tblDSNV.getValueAt(selectedRow, 7).toString());
         }
     }
 
@@ -327,6 +531,7 @@ public class NhanVienGUI extends JPanel implements ActionListener {
             deleteStaff();
         } else if (str.equals("Tìm kiếm")) {
             timKiem();
+            btnLamMoi.setVisible(true);
         } else if (str.equals("Nhập Excel")) {
             nhapExcel();
         } else if (str.equals("Xuất Excel")) {
@@ -371,8 +576,12 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         String tenNV = txtTenNV.getText().trim();
         String sdt = txtSDT.getText().trim();
         String luongStr = txtLuong.getText().trim();
+        String username = txtUsername.getText().trim();
+        String password = txtPassword.getText().trim();
+        String chucVu = cboxChucVu.getSelectedItem().toString().trim();
 
-        if (maNV.isEmpty() || hoNV.isEmpty() || tenNV.isEmpty() || sdt.isEmpty() || luongStr.isEmpty()) {
+        if (maNV.isEmpty() || hoNV.isEmpty() || tenNV.isEmpty() || sdt.isEmpty() || luongStr.isEmpty() || username.isEmpty() || password.isEmpty() || chucVu.equals("Chọn chức vụ")
+        		) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -400,10 +609,14 @@ public class NhanVienGUI extends JPanel implements ActionListener {
                 JOptionPane.showMessageDialog(this, "Số điện thoại đã được sử dụng!", "Lỗi", JOptionPane.WARNING_MESSAGE);
                 return;
             }
-
+            
             NhanVienDTO nv = new NhanVienDTO(maNV, hoNV, tenNV, sdt, luong);
-            nvBUS.addStaff(maNV, hoNV, tenNV, sdt, luong);
-            model.addRow(new Object[]{maNV, hoNV, tenNV, sdt, luong});
+            int maChucVu = chucVuBUS.getMaChucVu(chucVu);
+            tkBUS.addAccount(username, password);
+            
+            int maTK = tkBUS.getMaTK(username, password);
+            nvBUS.addStaff(maNV, hoNV, tenNV, sdt, luong, maTK, maChucVu);
+            model.addRow(new Object[]{maNV, hoNV, tenNV, sdt, luong, chucVu, username, password});
             tblDSNV.setModel(model);
             JOptionPane.showMessageDialog(this, "Thêm nhân viên thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             clearField();
@@ -430,6 +643,10 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         String tenNV = txtTenNV.getText().trim();
         String sdt = txtSDT.getText().trim();
         String luongStr = txtLuong.getText().trim();
+        String username = txtUsername.getText().trim();
+        String password = txtPassword.getText().trim();
+        String chucVu = cboxChucVu.getSelectedItem().toString().trim();
+        int maChucVu = cboxChucVu.getSelectedIndex();
 
         if (!txtMaNV.getText().trim().equals(maNV)) {
             JOptionPane.showMessageDialog(this, "Bạn không thể sửa mã nhân viên!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -437,7 +654,7 @@ public class NhanVienGUI extends JPanel implements ActionListener {
             return;
         }
 
-        if (maNV.isEmpty() || hoNV.isEmpty() || tenNV.isEmpty() || sdt.isEmpty() || luongStr.isEmpty()) {
+        if (maNV.isEmpty() || hoNV.isEmpty() || tenNV.isEmpty() || sdt.isEmpty() || luongStr.isEmpty() || username.isEmpty() || password.isEmpty() || cboxChucVu.getSelectedItem().toString().equals("Chọn chức vụ")) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -463,14 +680,21 @@ public class NhanVienGUI extends JPanel implements ActionListener {
                 return;
             }
 
-            nvBUS.fixStaff(hoNV, tenNV, sdt, luong, selectedRow);
+            nvBUS.fixStaff(hoNV, tenNV, sdt, luong, maChucVu ,selectedRow);
+            
+            int maTK = tkBUS.getMaTK(tblDSNV.getValueAt(selectedRow, 6).toString(), tblDSNV.getValueAt(selectedRow, 7).toString());
+            tkBUS.updateAccount(maTK, username, password);
             model.setValueAt(maNV, selectedRow, 0);
             model.setValueAt(hoNV, selectedRow, 1);
             model.setValueAt(tenNV, selectedRow, 2);
             model.setValueAt(sdt, selectedRow, 3);
             model.setValueAt(luong, selectedRow, 4);
+            model.setValueAt(chucVu, selectedRow, 5);
+            model.setValueAt(username, selectedRow, 6);
+            model.setValueAt(password, selectedRow, 7);
             tblDSNV.setModel(model);
             JOptionPane.showMessageDialog(this, "Sửa thông tin thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            btnPhanQuyen.setVisible(false);
             clearField();
             toggleEditInTheEnd();
         } catch (NumberFormatException ex) {
@@ -488,6 +712,7 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa nhân viên này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             nvBUS.deleteStaff(selectedRow);
+            tkBUS.deleteAccount(tblDSNV.getValueAt(selectedRow, 6).toString(), tblDSNV.getValueAt(selectedRow, 7).toString());
             model.removeRow(selectedRow);
             tblDSNV.setModel(model);
             JOptionPane.showMessageDialog(this, "Xóa nhân viên thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
@@ -586,6 +811,9 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         txtTenNV.setText("");
         txtSDT.setText("");
         txtLuong.setText("");
+        txtUsername.setText("");
+        txtPassword.setText("");
+        cboxChucVu.setSelectedIndex(0);
     }
 
     public void toggleEditInTheEnd() {
@@ -600,6 +828,10 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         txtSDT.setFocusable(false);
         txtLuong.setEditable(false);
         txtLuong.setFocusable(false);
+        txtUsername.setEditable(false);
+        txtUsername.setFocusable(false);
+        txtPassword.setEditable(false);
+        txtPassword.setFocusable(false);
     }
 
     public static void main(String[] args) {
@@ -607,7 +839,7 @@ public class NhanVienGUI extends JPanel implements ActionListener {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1248, 757);
         try {
-            frame.getContentPane().add(new NhanVienGUI());
+            frame.getContentPane().add(new NhanVienGUI(1, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
