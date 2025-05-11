@@ -135,7 +135,6 @@ public class MainGUI extends JFrame implements ActionListener {
         btnBanHang.setFont(new Font("Verdana", Font.BOLD, 14));
         btnBanHang.setBorderPainted(false);
         btnBanHang.setBackground(Color.decode(color));
-        btnBanHang.setVisible(false);
         btnBanHang.addActionListener(this);
         pNavItem.add(btnBanHang);
         if(quyenBUS.checkQuyen(maTK, 1)) {
@@ -264,6 +263,7 @@ public class MainGUI extends JFrame implements ActionListener {
         btnKhuyenMaiGUI.setBounds(20, 301, 200, 35);
         btnKhuyenMaiGUI.addActionListener(this);
         pNavItem.add(btnKhuyenMaiGUI);
+        btnKhuyenMaiGUI.setVisible(false);
         if(quyenBUS.checkQuyen(maTK, 8)) {
         	btnKhuyenMaiGUI.setVisible(true);
         	btnKhuyenMaiGUI.setBounds(20, y[i], 200, 35);
@@ -281,6 +281,7 @@ public class MainGUI extends JFrame implements ActionListener {
         btnThongKe.setBounds(20, 337, 200, 35);
         btnThongKe.addActionListener(this);
         pNavItem.add(btnThongKe);
+        btnThongKe.setVisible(false);
         if(quyenBUS.checkQuyen(maTK, 7)) {
         	btnThongKe.setVisible(true);
         	btnThongKe.setBounds(20, y[i], 200, 35);
