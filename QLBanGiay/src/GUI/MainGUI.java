@@ -9,6 +9,7 @@ import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -31,6 +32,7 @@ public class MainGUI extends JFrame implements ActionListener {
     private String username;
     private int maTK;
     private QuyenBUS quyenBUS;
+    private int[] y = {49, 85, 121, 157, 193, 229, 265, 301, 337};
     
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -46,6 +48,7 @@ public class MainGUI extends JFrame implements ActionListener {
     public MainGUI(String username, int maTK) throws SQLException {
     	this.username = username;
     	this.maTK = maTK;
+    	
     	quyenBUS = new QuyenBUS();
         initComponents();
     }
@@ -63,6 +66,7 @@ public class MainGUI extends JFrame implements ActionListener {
         contentPane.setLayout(null);
 
         // Navbar
+        int i = 0;
         JPanel pNavbar = new JPanel();
         pNavbar.setBounds(5, 6, 230, 800);
         pNavbar.setPreferredSize(new Dimension(200, 800));
@@ -122,6 +126,23 @@ public class MainGUI extends JFrame implements ActionListener {
         btnTrangChuGUI.setBounds(20, 13, 200, 35);
         btnTrangChuGUI.addActionListener(this);
         pNavItem.add(btnTrangChuGUI);
+        
+        JButton btnBanHang = new JButton("BÁN HÀNG");
+        btnBanHang.setIcon(new ImageIcon(MainGUI.class.getResource("/image/shopIcon.png")));
+        btnBanHang.setOpaque(true);
+        btnBanHang.setHorizontalAlignment(SwingConstants.LEFT);
+        btnBanHang.setForeground(Color.WHITE);
+        btnBanHang.setFont(new Font("Verdana", Font.BOLD, 14));
+        btnBanHang.setBorderPainted(false);
+        btnBanHang.setBackground(Color.decode(color));
+        btnBanHang.setVisible(false);
+        btnBanHang.addActionListener(this);
+        pNavItem.add(btnBanHang);
+        if(quyenBUS.checkQuyen(maTK, 1)) {
+        	btnBanHang.setVisible(true);
+        	btnBanHang.setBounds(20, y[i], 200, 35);
+        	i++;
+        }
 
         JButton btnSanPhamGUI = new JButton("SẢN PHẨM");
         btnSanPhamGUI.setIcon(new ImageIcon(MainGUI.class.getResource("/image/productIcon.png")));
@@ -131,11 +152,14 @@ public class MainGUI extends JFrame implements ActionListener {
         btnSanPhamGUI.setFont(new Font("Verdana", Font.BOLD, 14));
         btnSanPhamGUI.setBorderPainted(false);
         btnSanPhamGUI.setBackground(Color.decode(color));
-        btnSanPhamGUI.setBounds(20, 193, 200, 35);
+        btnSanPhamGUI.setBounds(20, 85, 200, 35);
         btnSanPhamGUI.addActionListener(this);
         pNavItem.add(btnSanPhamGUI);
-        if(!quyenBUS.checkQuyen(maTK, 2)) {
-        	btnSanPhamGUI.setVisible(false);
+        btnSanPhamGUI.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 2)) {
+        	btnSanPhamGUI.setVisible(true);
+        	btnSanPhamGUI.setBounds(20, y[i], 200, 35);
+        	i++;
         }
 
         JButton btnNhaCungCapGUI = new JButton("NHÀ CUNG CẤP");
@@ -146,11 +170,14 @@ public class MainGUI extends JFrame implements ActionListener {
         btnNhaCungCapGUI.setFont(new Font("Verdana", Font.BOLD, 14));
         btnNhaCungCapGUI.setBorderPainted(false);
         btnNhaCungCapGUI.setBackground(Color.decode(color));
-        btnNhaCungCapGUI.setBounds(20, 85, 200, 35);
+        btnNhaCungCapGUI.setBounds(20, 121, 200, 35);
         btnNhaCungCapGUI.addActionListener(this);
         pNavItem.add(btnNhaCungCapGUI);
-        if(!quyenBUS.checkQuyen(maTK, 3)) {
-        	btnNhaCungCapGUI.setVisible(false);
+        btnNhaCungCapGUI.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 3)) {
+        	btnNhaCungCapGUI.setVisible(true);
+        	btnNhaCungCapGUI.setBounds(20, y[i], 200, 35);
+        	i++;
         }
 
         JButton btnNhanVienGUI = new JButton("NHÂN VIÊN");
@@ -161,11 +188,14 @@ public class MainGUI extends JFrame implements ActionListener {
         btnNhanVienGUI.setFont(new Font("Verdana", Font.BOLD, 14));
         btnNhanVienGUI.setBorderPainted(false);
         btnNhanVienGUI.setBackground(Color.decode(color));
-        btnNhanVienGUI.setBounds(20, 121, 200, 35);
+        btnNhanVienGUI.setBounds(20, 157, 200, 35);
         btnNhanVienGUI.addActionListener(this);
         pNavItem.add(btnNhanVienGUI);
-        if(!quyenBUS.checkQuyen(maTK, 4)) {
-        	btnNhanVienGUI.setVisible(false);
+        btnNhanVienGUI.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 4)) {
+        	btnNhanVienGUI.setVisible(true);
+        	btnNhanVienGUI.setBounds(20, y[i], 200, 35);
+        	i++;
         }
 
         JButton btnKhachHangGUI = new JButton("KHÁCH HÀNG");
@@ -176,29 +206,14 @@ public class MainGUI extends JFrame implements ActionListener {
         btnKhachHangGUI.setFont(new Font("Verdana", Font.BOLD, 14));
         btnKhachHangGUI.setBorderPainted(false);
         btnKhachHangGUI.setBackground(Color.decode(color));
-        btnKhachHangGUI.setBounds(20, 157, 200, 35);
+        btnKhachHangGUI.setBounds(20, 193, 200, 35);
         btnKhachHangGUI.addActionListener(this);
         pNavItem.add(btnKhachHangGUI);
-        if(!quyenBUS.checkQuyen(maTK, 5)) {
-        	btnKhachHangGUI.setVisible(false);
-        }
-
-
-        JButton btnBanHang = new JButton("BÁN HÀNG");
-        btnBanHang.setIcon(new ImageIcon(MainGUI.class.getResource("/image/shopIcon.png")));
-        btnBanHang.setOpaque(true);
-        btnBanHang.setHorizontalAlignment(SwingConstants.LEFT);
-        btnBanHang.setForeground(Color.WHITE);
-        btnBanHang.setFont(new Font("Verdana", Font.BOLD, 14));
-        btnBanHang.setBorderPainted(false);
-        btnBanHang.setBackground(Color.decode(color));
-//        btnHoaDon.setBounds(20, 193, 200, 35);
-        btnBanHang.setBounds(20, 49, 200, 35);
-
-        btnBanHang.addActionListener(this);
-        pNavItem.add(btnBanHang);
-        if(!quyenBUS.checkQuyen(maTK, 1)) {
-        	btnBanHang.setVisible(false);
+        btnKhachHangGUI.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 5)) {
+        	btnKhachHangGUI.setVisible(true);
+        	btnKhachHangGUI.setBounds(20, y[i], 200, 35);
+        	i++;
         }
 
 
@@ -213,8 +228,11 @@ public class MainGUI extends JFrame implements ActionListener {
         btnPhieuNhap.setBounds(20, 229, 200, 35);
         btnPhieuNhap.addActionListener(this);
         pNavItem.add(btnPhieuNhap);
-        if(!quyenBUS.checkQuyen(maTK, 6)) {
-        	btnPhieuNhap.setVisible(false);
+        btnPhieuNhap.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 6)) {
+        	btnPhieuNhap.setVisible(true);
+        	btnPhieuNhap.setBounds(20, y[i], 200, 35);
+        	i++;
         }
 
         JButton btnPhieuXuat = new JButton("PHIẾU XUẤT");
@@ -228,8 +246,11 @@ public class MainGUI extends JFrame implements ActionListener {
         btnPhieuXuat.setBounds(20, 265, 200, 35);
         btnPhieuXuat.addActionListener(this);
         pNavItem.add(btnPhieuXuat);
-        if(!quyenBUS.checkQuyen(maTK, 9)) {
-        	btnPhieuXuat.setVisible(false);
+        btnPhieuXuat.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 9)) {
+        	btnPhieuXuat.setVisible(true);
+        	btnPhieuXuat.setBounds(20, y[i], 200, 35);
+        	i++;
         }
 
         JButton btnKhuyenMaiGUI = new JButton("KHUYẾN MÃI");
@@ -243,8 +264,10 @@ public class MainGUI extends JFrame implements ActionListener {
         btnKhuyenMaiGUI.setBounds(20, 301, 200, 35);
         btnKhuyenMaiGUI.addActionListener(this);
         pNavItem.add(btnKhuyenMaiGUI);
-        if(!quyenBUS.checkQuyen(maTK, 8)) {
-        	btnKhuyenMaiGUI.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 8)) {
+        	btnKhuyenMaiGUI.setVisible(true);
+        	btnKhuyenMaiGUI.setBounds(20, y[i], 200, 35);
+        	i++;
         }
         
         JButton btnThongKe = new JButton("THỐNG KÊ");
@@ -258,8 +281,10 @@ public class MainGUI extends JFrame implements ActionListener {
         btnThongKe.setBounds(20, 337, 200, 35);
         btnThongKe.addActionListener(this);
         pNavItem.add(btnThongKe);
-        if(!quyenBUS.checkQuyen(maTK, 7)) {
-        	btnThongKe.setVisible(false);
+        if(quyenBUS.checkQuyen(maTK, 7)) {
+        	btnThongKe.setVisible(true);
+        	btnThongKe.setBounds(20, y[i], 200, 35);
+        	i++;
         }
 
         // Main content area
