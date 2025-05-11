@@ -134,6 +134,7 @@ public class MainGUI extends JFrame implements ActionListener {
         btnBanHang.setForeground(Color.WHITE);
         btnBanHang.setFont(new Font("Verdana", Font.BOLD, 14));
         btnBanHang.setBorderPainted(false);
+        btnBanHang.setBounds(20, 49, 200, 35);
         btnBanHang.setBackground(Color.decode(color));
         btnBanHang.addActionListener(this);
         pNavItem.add(btnBanHang);
