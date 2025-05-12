@@ -32,18 +32,20 @@ public class QuyenDAO {
 			// TODO: handle exception
 		}
 		
-		
+		connect.disConnect();
 		return result;
 	}
 	
 	public void phanQuyenNV(int maTK, int maQuyen) {
 		String sql = "INSERT INTO chitietphanquyen (MaTK, MaQuyen) VALUES ("+ maTK +", "+ maQuyen + " )";
 		connect.executeUpdate(sql);
+		connect.disConnect();
 	}
 	
 	public void clearPhanQuyenNV(int maTK) {
 		String sql = "DELETE FROM chitietphanquyen WHERE MaTK = "+ maTK +"";
 		connect.executeUpdate(sql);
+		connect.disConnect();
 	}
 	
 	public boolean checkQuyen(int maTK, int maQuyen) {
