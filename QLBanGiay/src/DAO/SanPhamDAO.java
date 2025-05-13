@@ -2,7 +2,10 @@ package DAO;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -102,6 +105,44 @@ public class SanPhamDAO {
 		mysql.executeUpdate(sql);
 		mysql.disConnect();
 	}
+	
+	public static String getAnhSanPham(String maSP) {
+	    String imgPath = null;
+	    Connection connection = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+
+	    try {
+	        // Lấy connection từ class MySQLConnect
+	        MySQLConnect mySQL = new MySQLConnect();
+	        connection = mySQL.getConnection();
+
+	        String sql = "SELECT img_src FROM sanpham WHERE MaSP = ?";
+	        pstmt = connection.prepareStatement(sql);
+	        pstmt.setString(1, maSP);
+	        rs = pstmt.executeQuery();
+
+	        if (rs.next()) {
+	            imgPath = rs.getString("img_src");
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        // Đóng resource
+	        try {
+	            if (rs != null) rs.close();
+	            if (pstmt != null) pstmt.close();
+	            if (connection != null) connection.close();
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+
+	    return imgPath;
+	}
+
+
+
 	
 	
 	public int[] ImportExcel(File file) {

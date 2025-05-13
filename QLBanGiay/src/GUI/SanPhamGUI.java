@@ -9,6 +9,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -35,6 +37,9 @@ import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+
+import com.mysql.cj.xdevapi.Statement;
+
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import java.awt.Image;
@@ -437,6 +442,7 @@ public class SanPhamGUI extends JPanel implements ActionListener {
                     hienThiAnh(duongDanAnh);
                 }
             }
+            
         });
         add(btnChonAnh); // Thêm nút vào panelAnh
 
@@ -452,6 +458,24 @@ public class SanPhamGUI extends JPanel implements ActionListener {
         JScrollPane scrollPane = new JScrollPane(tblDSSP);
         scrollPane.setBounds(146, 544, 964, 167);
         add(scrollPane);
+        
+        tblDSSP.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tblDSSP.getSelectedRow();
+                if (row != -1) {
+                    String maSP = tblDSSP.getValueAt(row, 0).toString();  // cột 0 là MaSP
+                    System.out.println("Mã sản phẩm đã chọn: " + maSP);  // Debug để xem mã sản phẩm
+                    String duongDanAnh = SanPhamDAO.getAnhSanPham(maSP);
+                    System.out.println("Đường dẫn ảnh: " + duongDanAnh);  // Debug đường dẫn ảnh
+                    if (duongDanAnh != null) {
+                        hienThiAnh(duongDanAnh);
+                    } else {
+                        lblAnhSanPham.setIcon(null);
+                    }
+                }
+            }
+        });
+
 
         tblDSSP.addMouseListener(new MouseListener() {
             @Override
@@ -469,7 +493,16 @@ public class SanPhamGUI extends JPanel implements ActionListener {
     
     private void hienThiAnh(String duongDan) {
         try {
-            ImageIcon icon = new ImageIcon(duongDan);
+        	 URL url = getClass().getResource(duongDan);  // Lưu ý /image/... (dấu "/" ở đầu đường dẫn)
+             
+             if (url == null) {
+                 JOptionPane.showMessageDialog(null, "Không tìm thấy ảnh: " + duongDan);
+                 return;
+             }
+
+             // Tạo ImageIcon từ tài nguyên
+             ImageIcon icon = new ImageIcon(url);
+            System.out.println("Đường dẫn ảnh: " + duongDan);  // Debug để kiểm tra đường dẫn ảnh
             Image img = icon.getImage();
 
             // Tính toán giữ nguyên tỷ lệ
@@ -500,6 +533,9 @@ public class SanPhamGUI extends JPanel implements ActionListener {
             e.printStackTrace();
         }
     }
+
+    
+   
 
 
     public void tblDSSPMouseClicked() 

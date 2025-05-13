@@ -26,6 +26,7 @@ import BUS.KhachHangBUS;
 import BUS.LoaiBUS;
 import BUS.NhanVienBUS;
 import BUS.SanPhamBUS;
+import DAO.SanPhamDAO;
 import DTO.ChiTietHDDTO;
 import DTO.HTTTDTO;
 import DTO.KhachHangDTO;
@@ -48,7 +49,7 @@ public class BanHangGUI extends JPanel {
     private int lastSelectedRowSanPham = -1;
     private int lastSelectedRowGioHang = -1;
     private JButton btnXemAnh;
-    private String duongDan = "/image/nikeairmax_red.png";
+    private String duongDan = "/image/nb530_white.png";
     private JLabel lblAnhSanPham;
 
 
@@ -795,9 +796,25 @@ public class BanHangGUI extends JPanel {
     	                break;
     	            }
     	        }
-    	        hienThiAnh(duongDan);
     	    }
     	});
+    	
+    	 tableSanPham.getSelectionModel().addListSelectionListener(e -> {
+             if (!e.getValueIsAdjusting()) {
+                 int row =  tableSanPham.getSelectedRow();
+                 if (row != -1) {
+                     String maSP =  tableSanPham.getValueAt(row, 0).toString();  // cột 0 là MaSP
+                     System.out.println("Mã sản phẩm đã chọn: " + maSP);  // Debug để xem mã sản phẩm
+                     String duongDanAnh = SanPhamDAO.getAnhSanPham(maSP);
+                     System.out.println("Đường dẫn ảnh: " + duongDanAnh);  // Debug đường dẫn ảnh
+                     if (duongDanAnh != null) {
+                         hienThiAnh(duongDanAnh);
+                     } else {
+                         lblAnhSanPham.setIcon(null);
+                     }
+                 }
+             }
+    	 });
 
     }
 
