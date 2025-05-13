@@ -282,7 +282,7 @@ public class MainGUI extends JFrame implements ActionListener {
         btnThongKe.setBounds(20, 337, 200, 35);
         btnThongKe.addActionListener(this);
         pNavItem.add(btnThongKe);
-        btnThongKe.setVisible(false);
+        btnThongKe.setVisible(true);
         if(quyenBUS.checkQuyen(maTK, 7)) {
         	btnThongKe.setVisible(true);
         	btnThongKe.setBounds(20, y[i], 200, 35);

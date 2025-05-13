@@ -8,6 +8,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -15,11 +16,19 @@ import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import BUS.ThongKeBUS;
 import DTO.ThongKeDoanhThuDTO;
@@ -67,13 +76,11 @@ public class ThongKeDoanhThuTheoThang extends JPanel {
         btnXuatExcelMonthly.setForeground(Color.WHITE);
         btnXuatExcelMonthly.setBorder(BorderFactory.createEmptyBorder());
         btnXuatExcelMonthly.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exportToExcel();
+            }
+        });
         pFilterMonthly.add(btnXuatExcelMonthly);
 
         // Biểu đồ cột
@@ -142,6 +149,58 @@ public class ThongKeDoanhThuTheoThang extends JPanel {
                 df.format((int)thongKe.getDoanhThu()),
                 df.format((int)thongKe.getLoiNhuan())
             });
+        }
+    }
+
+    private void exportToExcel() {
+        try {
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Thong Ke Doanh Thu Theo Thang");
+
+            // Create header row
+            Row headerRow = sheet.createRow(0);
+            String[] columns = {"Tháng", "Chi phí", "Doanh thu", "Lợi nhuận"};
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columns[i]);
+            }
+
+            // Create data rows
+            for (int i = 0; i < tableModelMonthly.getRowCount(); i++) {
+                Row row = sheet.createRow(i + 1);
+                for (int j = 0; j < tableModelMonthly.getColumnCount(); j++) {
+                    Cell cell = row.createCell(j);
+                    cell.setCellValue(tableModelMonthly.getValueAt(i, j).toString());
+                }
+            }
+
+            // Auto-size columns
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Let user choose file location
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+            fileChooser.setSelectedFile(new java.io.File("ThongKeDoanhThu_TheoThang_" + cboxNam.getSelectedItem() + ".xlsx"));
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                if (!filePath.endsWith(".xlsx")) {
+                    filePath += ".xlsx";
+                }
+                try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+                    workbook.write(fileOut);
+                }
+                workbook.close();
+                JOptionPane.showMessageDialog(this, "Xuất file Excel thành công: " + filePath, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                workbook.close();
+                return; // User canceled the save operation
+            }
+
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi xuất file Excel: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
 

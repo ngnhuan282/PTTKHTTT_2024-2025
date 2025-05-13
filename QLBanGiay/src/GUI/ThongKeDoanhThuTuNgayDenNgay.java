@@ -131,7 +131,7 @@ public class ThongKeDoanhThuTuNgayDenNgay extends JPanel {
 
         // Biểu đồ cột
         pChartDateRange = new RoundedPanel(10);
-        pChartDateRange.setBounds(20, 120, 1188, 300);
+        pChartDateRange.setBounds(20, 120, 1188, 250);
         pChartDateRange.setBackground(Color.WHITE);
         pChartDateRange.setLayout(null);
         pDateRange.add(pChartDateRange);
